@@ -52,8 +52,6 @@
         {% if c.confirmed_id %}
             {% set summary = attendance_summary[c.confirmed_id] %}
 
-            <p>参加人数：{{ summary.attend_count }} 名</p>
-
             {% if summary.attend_members %}
                 <p>
                     参加者：
