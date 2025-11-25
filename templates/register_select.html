@@ -55,15 +55,21 @@
             <p>参加人数：{{ summary.attend_count }} 名</p>
 
             {% if summary.attend_members %}
-                <p>参加者：{{ summary.attend_members | join("、") }}</p>
+                <p>
+                    参加者：
+                    {{ summary.attend_members | join("、") }}
+                    （{{ summary.attend_members | length }}名）
+                </p>
             {% else %}
                 <p>参加者：なし</p>
             {% endif %}
 
-            <p>不参加人数：{{ summary.absent_count }} 名</p>
-
             {% if summary.absent_members %}
-                <p>不参加者：{{ summary.absent_members | join("、") }}</p>
+                <p>
+                    不参加者：
+                    {{ summary.absent_members | join("、") }}
+                    （{{ summary.absent_members | length }}名）
+                </p>
             {% else %}
                 <p>不参加者：なし</p>
             {% endif %}
