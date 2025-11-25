@@ -43,18 +43,28 @@
 <a class="btn" href="{{ url_for('home') }}">← ホームへ戻る</a>
 
 <div class="card-list">
-    {% for c in candidates %}
-    <div class="card">
-        <h2>{{ c.year }}年{{ c.month }}月{{ c.day }}日</h2>
-        <p>{{ c.gym }}</p>
-        <p>{{ c.start }} - {{ c.end }}</p>
-
-        {% if c.confirmed_id %}
-            <p>参加人数：{{ attendance_summary[c.confirmed_id].attend_count }} 名</p>
-            <p>不参加人数：{{ attendance_summary[c.confirmed_id].absent_count }} 名</p>
+    {% if c.confirmed_id %}
+        {% set summary = attendance_summary[c.confirmed_id] %}
+    
+        <p>参加人数：{{ summary.attend_count }} 名</p>
+    
+        {% if summary.attend_members %}
+            <p>参加者：{{ summary.attend_members | join("、") }}</p>
         {% else %}
-            <p>参加状況：<span style="color:#999;">未確定</span></p>
+            <p>参加者：なし</p>
         {% endif %}
+    
+        <p>不参加人数：{{ summary.absent_count }} 名</p>
+    
+        {% if summary.absent_members %}
+            <p>不参加者：{{ summary.absent_members | join("、") }}</p>
+        {% else %}
+            <p>不参加者：なし</p>
+        {% endif %}
+    
+    {% else %}
+        <p>参加状況：<span style="color:#999;">未確定</span></p>
+    {% endif %}
 
         <a class="btn" href="{{ url_for('register_event', candidate_id=c.id) }}">この日で登録</a>
     </div>
