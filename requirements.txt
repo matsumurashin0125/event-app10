@@ -1,0 +1,8 @@
+Flask
+gunicorn
+psycopg2-binary
+SQLAlchemy
+Flask-SQLAlchemy
+sendgrid
+pytz
+sendgrid>=6.10.0

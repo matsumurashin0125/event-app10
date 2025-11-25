@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>出欠編集</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <h2>出欠編集</h2>
+
+        <form action="{{ url_for('edit_attendance', id=att.id) }}" method="POST" class="card">
+            <label>名前：</label>
+            <select name="name" required>
+                {% for m in members %}
+                <option value="{{ m }}" {% if att.name == m %}selected{% endif %}>{{ m }}</option>
+                {% endfor %}
+            </select>
+
+            <br><br>
+
+            <label>ステータス：</label>
+            <select name="status">
+                <option value="attend" {% if att.status == "attend" %}selected{% endif %}>参加</option>
+                <option value="absent" {% if att.status == "absent" %}selected{% endif %}>不参加</option>
+                <option value="pending" {% if att.status == "pending" or not att.status %}selected{% endif %}>未回答</option>
+            </select>
+
+            <br><br>
+
+            <button type="submit" class="btn">更新</button>
+        </form>
+
+        <hr>
+
+        <form action="{{ url_for('delete_attendance', id=att.id) }}" method="POST"
+              onsubmit="return confirm('本当に削除しますか？');">
+            <button type="submit" class="btn delete-btn">削除</button>
+        </form>
+
+        <br>
+        <a href="{{ url_for('register_event', candidate_id=att.event.candidate_id) }}" class="back-btn">戻る</a>
+    </div>
+</body>
+</html>

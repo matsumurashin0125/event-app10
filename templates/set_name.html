@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>名前を選択</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body { font-family: system-ui; padding: 20px; }
+        h2 { text-align: center; }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .name-tile {
+            background: #f3f4f6;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        .name-tile:hover {
+            background: #e5e7eb;
+        }
+
+        button {
+            display: none;
+        }
+    </style>
+
+    <script>
+        function selectName(name) {
+            const form = document.getElementById("nameForm");
+            document.getElementById("user_name").value = name;
+            form.submit();
+        }
+    </script>
+</head>
+<body>
+
+<h2>お名前を選んでください</h2>
+
+<form id="nameForm" method="POST" action="/set_name">
+    <input type="hidden" id="user_name" name="user_name">
+
+    <div class="grid">
+        {% for m in members %}
+            <div class="name-tile" onclick="selectName('{{ m }}')">
+                {{ m }}
+            </div>
+        {% endfor %}
+    </div>
+</form>
+
+</body>
+</html>

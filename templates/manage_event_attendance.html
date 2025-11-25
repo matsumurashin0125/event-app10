@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>参加者編集（管理）</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<div class="container">
+    <h2>参加者編集</h2>
+
+    <div class="info-box">
+        <strong>日付:</strong> {{ event_info.md }}<br>
+        <strong>体育館:</strong> {{ event_info.gym }}<br>
+        <strong>時間:</strong> {{ event_info.start }} 〜 {{ event_info.end }}
+    </div>
+
+    <h3>参加状況</h3>
+
+    <table>
+        <thead>
+            <tr>
+                <th>名前</th>
+                <th>ステータス</th>
+                <th>更新</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for a in attendance %}
+            <tr>
+                <td>{{ a.name }}</td>
+                <td>
+                    {% if a.status == "attend" %}
+                        <span class="status-attend">参加</span>
+                    {% elif a.status == "absent" %}
+                        <span class="status-absent">不参加</span>
+                    {% else %}
+                        <span class="status-none">未回答</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <form method="POST" action="{{ url_for('update_attendance', attendance_id=a.id) }}">
+                        <input type="hidden" name="event_id" value="{{ event_info.id }}">
+                        <button class="small-btn" type="submit">更新</button>
+                    </form>
+                    <form method="POST" action="{{ url_for('delete_attendance', id=a.id) }}" style="display:inline;">
+                        <input type="hidden" name="event_id" value="{{ event_info.id }}">
+                        <button class="small-btn delete-btn" onclick="return confirm('削除しますか？')">削除</button>
+                    </form>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <br>
+    <a href="{{ url_for('confirm') }}" class="back-btn">← 確定一覧へ戻る</a>
+</div>
+</body>
+</html>

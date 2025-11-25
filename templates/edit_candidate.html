@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>候補日編集</title>
+</head>
+<body>
+    <h2>候補日編集</h2>
+
+    <form action="{{ url_for('edit_candidate', id=cand.id) }}" method="POST">
+
+        <label>年：</label>
+        <input type="number" name="year" value="{{ cand.year }}" required>
+        <br><br>
+
+        <label>月：</label>
+        <input type="number" name="month" value="{{ cand.month }}" required>
+        <br><br>
+
+        <label>日：</label>
+        <input type="number" name="day" value="{{ cand.day }}" required>
+        <br><br>
+
+        <label>場所：</label>
+        <select name="gym" required>
+            {% for g in gyms %}
+            <option value="{{ g }}" {% if g == cand.gym %}selected{% endif %}>{{ g }}</option>
+            {% endfor %}
+        </select>
+        <br><br>
+
+        <label>開始時間：</label>
+        <select name="start" required>
+            {% for t in times %}
+            <option value="{{ t }}" {% if t == cand.start %}selected{% endif %}>{{ t }}</option>
+            {% endfor %}
+        </select>
+        <br><br>
+
+        <label>終了時間：</label>
+        <select name="end" required>
+            {% for t in times %}
+            <option value="{{ t }}" {% if t == cand.end %}selected{% endif %}>{{ t }}</option>
+            {% endfor %}
+        </select>
+        <br><br>
+
+        <button type="submit">更新する</button>
+    </form>
+
+    <br>
+    <a href="{{ url_for('admin_menu') }}">戻る</a>
+</body>
+</html>

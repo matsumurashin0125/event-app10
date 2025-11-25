@@ -1,0 +1,299 @@
+/* ------------------------------
+   全体設定
+------------------------------ */
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    margin: 0;
+    padding: 20px;
+    background: #f5f7fa;
+    color: #333;
+    text-align: center;
+}
+
+h1, h2, h3 {
+    margin-bottom: 20px;
+}
+
+/* ------------------------------
+   共通ボタン
+------------------------------ */
+.btn {
+    display: inline-block;
+    padding: 14px 22px;
+    margin: 10px 0;
+    background: #2980b9;
+    color: white;
+    text-decoration: none;
+    border-radius: 10px;
+    font-size: 18px;
+    font-weight: 600;
+    transition: 0.2s;
+    width: 80%;
+    max-width: 300px;
+}
+
+.btn:hover {
+    background: #1c648b;
+}
+
+/* 管理者ボタン */
+.admin-btn {
+    background: #27ae60;
+}
+
+.admin-btn:hover {
+    background: #1f8a4b;
+}
+
+/* 戻るボタン */
+.back-btn {
+    background: #7f8c8d;
+}
+
+.back-btn:hover {
+    background: #626f70;
+}
+
+/* 削除ボタン */
+.delete-btn {
+    background: #e74c3c !important;
+}
+
+.delete-btn:hover {
+    background: #c0392b !important;
+}
+
+/* ------------------------------
+   入力フォーム
+------------------------------ */
+form {
+    text-align: left;
+    margin: 0 auto;
+    max-width: 400px;
+}
+
+label {
+    display: block;
+    font-weight: bold;
+    margin: 12px 0 5px;
+}
+
+select, input[type="text"], input[type="number"] {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+}
+
+/* ------------------------------
+   カード（候補日 & 選択画面）
+------------------------------ */
+.card-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 18px;
+    padding-bottom: 40px;
+}
+
+.card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    width: 90%;
+    max-width: 340px;
+    box-shadow: 0px 3px 10px rgba(0,0,0,0.15);
+    text-align: left;
+    transition: 0.2s;
+}
+
+.card:hover {
+    transform: scale(1.02);
+}
+
+.card-header {
+    font-size: 20px;
+    font-weight: bold;
+    color: #333;
+}
+
+.card-sub {
+    font-size: 16px;
+    margin: 6px 0;
+    color: #555;
+}
+
+/* カード内のボタン */
+.card .btn {
+    width: 100%;
+    margin-top: 10px;
+}
+
+/* ------------------------------
+   テーブル（confirm画面・出欠一覧）
+------------------------------ */
+table {
+    width: 95%;
+    margin: 0 auto 40px;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 10px;
+    overflow: auto;   /* ← スマホで横スクロール可能に */
+    display: block;   /* ← スマホで崩れにくくなる */
+}
+
+th, td {
+    padding: 12px;
+    border-bottom: 1px solid #eee;
+}
+
+th {
+    background: #3498db;
+    color: white;
+}
+
+.confirmed {
+    background: #e0e0e0 !important;
+}
+
+.date-large {
+    font-size: 1.4em;
+    font-weight: bold;
+    padding: 6px;
+}
+
+tr:nth-child(even) {
+    background: #f8fbfd;
+}
+
+/* ------------------------------
+   管理者メニュー（タイル型）
+------------------------------ */
+.tile-menu {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 18px;
+    padding: 20px 0;
+}
+
+.tile {
+    width: 42%;
+    max-width: 180px;
+    background: white;
+    padding: 25px 0;
+    border-radius: 15px;
+    box-shadow: 0px 3px 10px rgba(0,0,0,0.15);
+    text-decoration: none;
+    color: #333;
+    font-size: 18px;
+    font-weight: bold;
+    transition: 0.2s;
+}
+
+.tile:hover {
+    transform: scale(1.05);
+    background: #eaf4ff;
+}
+
+/* ------------------------------
+   スマホ最適化追加
+------------------------------ */
+@media (max-width: 480px) {
+
+    body {
+        padding: 10px;
+    }
+
+    h1 {
+        font-size: 22px;
+    }
+
+    h2 {
+        font-size: 20px;
+    }
+
+    .btn {
+        width: 100%;        /* ← スマホでは全幅 */
+        font-size: 17px;
+        padding: 12px 16px;
+    }
+
+    .card {
+        width: 100%;
+        padding: 16px;
+        max-width: none;
+    }
+
+    form {
+        max-width: 100%;
+    }
+
+    label {
+        font-size: 14px;
+    }
+
+    select, input {
+        font-size: 15px;
+    }
+
+    .tile {
+        width: 90%;          /* ← 1カラム優先 */
+        max-width: none;
+    }
+}
+
+/* ------------------------------
+   参加者編集ページ用（manage_event_attendance）
+------------------------------ */
+
+/* イベント情報ボックス */
+.info-box {
+    background: white;
+    padding: 18px;
+    margin: 0 auto 25px;
+    width: 95%;
+    max-width: 500px;
+    border-radius: 12px;
+    box-shadow: 0px 3px 10px rgba(0,0,0,0.12);
+    text-align: left;
+}
+
+/* ステータスの色分け */
+.status-attend {
+    color: #27ae60;
+    font-weight: bold;
+}
+
+.status-absent {
+    color: #e74c3c;
+    font-weight: bold;
+}
+
+.status-none {
+    color: #7f8c8d;
+}
+
+/* 更新ボタン（小さいボタン） */
+.small-btn {
+    padding: 6px 12px;
+    background: #2980b9;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.small-btn:hover {
+    background: #1c648b;
+}
+
+/* セレクトボックスも統一感 */
+.select-small {
+    padding: 6px;
+    border-radius: 8px;
+    font-size: 14px;
+}

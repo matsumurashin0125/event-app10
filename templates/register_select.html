@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>参加登録 - 候補日選択</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/static/style.css">
+
+    <style>
+        body { font-family: system-ui, -apple-system, "Hiragino Kaku Gothic ProN", "メイリオ", sans-serif; padding: 16px; }
+        h1 { font-size: 20px; text-align: center; margin-bottom: 10px; }
+
+        .username-box {
+            background: #f4f8ff;
+            border-left: 4px solid #2b7cff;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
+
+        .card-list { display: grid; grid-template-columns: repeat(auto-fit,minmax(240px,1fr)); gap: 12px; }
+        .card {
+            border: 1px solid #eee;
+            padding: 16px;
+            border-radius: 10px;
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.06);
+        }
+
+        .card h2 { font-size: 18px; margin-bottom: 4px; }
+        .btn { display: inline-block; margin-top: 10px; padding: 8px 12px; background:#2b7cff;
+               color:white; border-radius:6px; text-decoration:none; text-align:center; }
+    </style>
+</head>
+<body>
+
+<h1>参加したい日を選んでください</h1>
+
+<div class="username-box">
+    👤 <strong>{{ user_name }}</strong> さんとして登録します
+</div>
+
+<a class="btn" href="{{ url_for('home') }}">← ホームへ戻る</a>
+
+<div class="card-list">
+    {% for c in candidates %}
+    <div class="card">
+        <h2>{{ c.year }}年{{ c.month }}月{{ c.day }}日</h2>
+        <p>{{ c.gym }}</p>
+        <p>{{ c.start }} - {{ c.end }}</p>
+
+        {% if c.confirmed_id %}
+            <p>参加人数：{{ attendance_summary[c.confirmed_id].attend_count }} 名</p>
+            <p>不参加人数：{{ attendance_summary[c.confirmed_id].absent_count }} 名</p>
+        {% else %}
+            <p>参加状況：<span style="color:#999;">未確定</span></p>
+        {% endif %}
+
+        <a class="btn" href="{{ url_for('register_event', candidate_id=c.id) }}">この日で登録</a>
+    </div>
+    {% endfor %}
+</div>
+
+</body>
+</html>

@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <title>参加登録</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <style>
+    body{font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","メイリオ",sans-serif;padding:20px}
+    .card{max-width:720px;margin:20px auto;border:1px solid #eee;padding:16px;border-radius:10px;background:white;box-shadow:0 2px 4px rgba(0,0,0,0.05)}
+    .btn{background:#2b7cff;color:#fff;border:none;padding:10px 12px;width:100%;border-radius:6px;cursor:pointer;font-size:16px}
+
+    .sub-btn{
+        background:#ddd;
+        color:#333;
+        margin-top:12px;
+        width:100%;
+        padding:10px;
+        border-radius:6px;
+        text-align:center;
+        display:block;
+        text-decoration:none;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>参加登録 — {{ candidate.gym }} {{ candidate.year }}/{{ candidate.month }}/{{ candidate.day }}</h2>
+
+    <div class="fixed-name">
+        👤 登録者：<strong>{{ default_name }}</strong>
+    </div>
+
+    <form method="POST">
+      <input type="hidden" name="name" value="{{ default_name }}">
+
+      <div style="margin-top:10px;">
+        <label>出欠</label>
+        <label><input type="radio" name="status" value="参加" checked> 参加</label>
+        <label><input type="radio" name="status" value="未定"> 未定</label>
+        <label><input type="radio" name="status" value="欠席"> 欠席</label>
+      </div>
+
+      <div style="margin-top:16px;">
+        <button class="btn" type="submit">送信（参加ならICSメール送信）</button>
+      </div>
+    </form>
+
+    <!-- ★ register画面に戻る -->
+    <a class="sub-btn" href="{{ url_for('register') }}">← 参加一覧に戻る</a>
+
+    <!-- ★ set_name画面へ -->
+    <a class="sub-btn" href="{{ url_for('set_name') }}">👤 名前入力画面へ</a>
+
+    <h3>現在の出欠</h3>
+    <table>
+      <thead><tr><th>名前</th><th>状態</th><th>登録日時</th></tr></thead>
+      <tbody>
+        {% for a in attendance %}
+          <tr>
+            <td>{{ a.name }}</td>
+            <td>{{ a.status }}</td>
+            <td>{{ a.created_at.strftime('%Y-%m-%d %H:%M') if a.created_at else '' }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+  </div>
+</body>
+</html>

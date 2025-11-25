@@ -1,0 +1,25 @@
+<!-- templates/home.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>メニュー</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<h1>ページ選択</h1>
+
+<div class="card-container" style="justify-content:center;">
+
+    <div class="card" style="max-width:360px; text-align:center;">
+        <a class="btn" href="{{ url_for('set_name') }}">参加登録</a>
+        <a class="btn admin-btn" href="{{ url_for('admin_menu') }}">管理者メニュー</a>
+        <a class="btn back-btn" href="{{ url_for('set_name') }}">名前変更</a>
+    </div>
+
+</div>
+
+</body>
+</html>

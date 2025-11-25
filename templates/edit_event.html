@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>イベント編集</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<div class="nav">
+    <a href="{{ url_for('home') }}">🏠</a>
+    <a href="{{ url_for('confirm') }}">🔙</a>
+</div>
+
+<h1>イベント編集</h1>
+
+<form method="post">
+    <input type="number" name="year" value="{{ event.year }}" required>
+    <input type="number" name="month" value="{{ event.month }}" required>
+    <input type="number" name="day" value="{{ event.day }}" required>
+
+    <input type="text" name="gym" value="{{ event.gym }}">
+
+    <label>開始</label>
+    <input type="time" name="start" value="{{ event.start }}">
+    <label>終了</label>
+    <input type="time" name="end" value="{{ event.end }}">
+
+    <button type="submit">更新する</button>
+</form>
+
+</body>
+</html>

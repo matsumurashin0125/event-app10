@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>候補日入力</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<h1>候補日入力</h1>
+
+<div class="card" style="max-width: 500px; margin: auto;">
+
+    <form method="POST">
+
+        <label>年</label>
+        <select name="year">
+            {% for y in years %}
+                <option value="{{ y }}" {% if y == selected_year %}selected{% endif %}>{{ y }}</option>
+            {% endfor %}
+        </select>
+
+        <label>月</label>
+        <select name="month">
+            {% for m in months %}
+                <option value="{{ m }}" {% if m == selected_month %}selected{% endif %}>{{ m }}</option>
+            {% endfor %}
+        </select>
+
+        <label>日</label>
+        <select name="day">
+            {% for d in days %}
+                <option value="{{ d }}" {% if d == selected_day %}selected{% endif %}>{{ d }}</option>
+            {% endfor %}
+        </select>
+
+        <label>体育館</label>
+        <select name="gym">
+            {% for g in gyms %}
+                <option value="{{ g }}" {% if g == selected_gym %}selected{% endif %}>{{ g }}</option>
+            {% endfor %}
+        </select>
+
+        <label>開始時間</label>
+        <select name="start">
+            {% for t in times %}
+                <option value="{{ t }}" {% if t == selected_start %}selected{% endif %}>{{ t }}</option>
+            {% endfor %}
+        </select>
+
+        <label>終了時間</label>
+        <select name="end">
+            {% for t in times %}
+                <option value="{{ t }}" {% if t == selected_end %}selected{% endif %}>{{ t }}</option>
+            {% endfor %}
+        </select>
+
+        <button class="btn" type="submit">候補日を追加</button>
+    </form>
+
+    <a class="btn back-btn" href="{{ url_for('admin_menu') }}">管理者メニューに戻る</a>
+</div>
+
+</body>
+</html>
