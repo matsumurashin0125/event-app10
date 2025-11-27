@@ -656,33 +656,6 @@ def create_app():
                 f"参加予定: {len(attend_members)}名\n"
                 f"{', '.join(attend_members) if attend_members else 'まだ未登録'}"
             )
-            
-   
-    @app.route("/line_webhook", methods=["POST"])
-    def line_webhook():
-        body = request.get_data(as_text=True)
-        data = json.loads(body)
-    
-        event = data["events"][0]
-        src = event.get("source", {})
-    
-        # グループ参加イベントでも取得できる
-        if event["type"] == "join" and src.get("type") == "group":
-            print("Group ID:", src["groupId"])
-            return "OK"
-    
-        # メッセージイベントでも取得できる
-        if event["type"] == "message":
-            if src.get("type") == "user":
-                print("User ID:", src["userId"])
-            elif src.get("type") == "group":
-                print("Group ID:", src["groupId"])
-            elif src.get("type") == "room":
-                print("Room ID:", src["roomId"])
-    
-        return "OK"
-
-
 
 
     # DB create
