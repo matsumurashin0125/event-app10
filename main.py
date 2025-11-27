@@ -211,14 +211,16 @@ def create_app():
             confirmed_ids=confirmed_ids,
             attendance_summary=attendance_summary
         )
-
+        
     @app.route("/confirm/<int:candidate_id>/unconfirm", methods=["POST"])
     def unconfirm(candidate_id):
         conf = Confirmed.query.filter_by(candidate_id=candidate_id).first()
         if conf:
+            Attendance.query.filter_by(event_id=conf.id).delete()  # ★追加
             db.session.delete(conf)
             db.session.commit()
         return redirect(url_for("confirm"))
+
 
     # --------------------------------------------
     # 参加者編集ページ（表示）
