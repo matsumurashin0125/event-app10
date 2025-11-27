@@ -662,12 +662,21 @@ def create_app():
             
     @app.route("/cron_reminder", methods=["POST"])
     def cron_reminder():
-        token = request.headers.get("X-CRON-TOKEN")
-        if token != os.getenv("CRON_TOKEN"):
-            return "Unauthorized", 401
+        try:
+            send_reminder_to_all_events()  # ←前日リマインダー処理の関数
+            log = CronLog(status="success", message="Reminder sent")
+            db.session.add(log)
+            db.session.commit()
+            print("CRON executed successfully")
+            return {"status": "ok"}, 200
     
-        send_reminder_for_tomorrow()
-        return "OK", 200
+        except Exception as e:
+            log = CronLog(status="failed", message=str(e))
+            db.session.add(log)
+            db.session.commit()
+            print("CRON failed:", e)
+            return {"status": "error"}, 500
+
 
 
     # DB create
