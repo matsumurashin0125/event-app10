@@ -10,6 +10,8 @@ from flask import Flask, render_template, request, redirect, url_for, session
 import traceback
 
 from models import db, Candidate, Confirmed, Attendance
+from linebot import LineBotApi
+from linebot.models import TextSendMessage
 
 def create_app():
     app = Flask(__name__, static_folder="static", template_folder="templates")
@@ -130,6 +132,11 @@ def create_app():
             if not exists:
                 db.session.add(Confirmed(candidate_id=c_id))
                 db.session.commit()
+
+                c = Candidate.query.get(c_id)
+                d = date(c.year, c.month, c.day)
+                youbi = ["月","火","水","木","金","土","日"][d.weekday()]
+                notify_line(f"📌 日程が確定しました\n{c.month}/{c.day}（{youbi}） {c.gym}\n{c.start}〜{c.end}")
             return redirect(url_for("confirm"))
         confirmed = (
             db.session.query(Confirmed, Candidate)
@@ -318,6 +325,19 @@ def create_app():
     
             db.session.commit()
 
+            # 参加人数を計算
+            event_att = Attendance.query.filter_by(event_id=event.id).all()
+            attend_count = len([a for a in event_att if a.status == "attend"])
+            absent_count = len([a for a in event_att if a.status == "absent"])
+            
+            send_line_message(
+                f"📝 参加登録\n"
+                f"{request.form['name']} : {status}\n"
+                f"現在の状況 → 参加 {attend_count} / 不参加 {absent_count}\n"
+                f"{candidate.month}/{candidate.day} @ {candidate.gym} {candidate.start}〜{candidate.end}"
+            )
+
+
              # ---- メール送信（参加の場合）----
             if status == "attend":
                 name = request.form["name"]              # ★ 重要：名前を確定
@@ -360,6 +380,7 @@ def create_app():
             cand.start = request.form["start"]
             cand.end = request.form["end"]
             db.session.commit()
+            notify_line(f"✏️ 確定日程が変更されました\n{cand.month}/{cand.day} {cand.gym}\n{cand.start}〜{cand.end}")
             return redirect(url_for("confirm"))
         return render_template("edit_candidate.html", cand=cand, gyms=gyms, times=times)
 
@@ -578,6 +599,33 @@ def create_app():
         except Exception as e:
             print("SendGrid Error:", e)
             return False
+    # === LINE Messaging API 送信用共通関数 ===
+    def send_line_message(text):
+        try:
+            line_bot_api = LineBotApi(os.environ.get("LINE_CHANNEL_ACCESS_TOKEN"))
+            to_id = os.environ.get("LINE_GROUP_ID")   # グループ or 個人
+            line_bot_api.push_message(to_id, TextSendMessage(text=text))
+        except Exception as e:
+            print("LINE Error:", e)
+
+    def send_reminder_for_tomorrow():
+    tomorrow = datetime.now(LOCAL_TZ).date() + timedelta(days=1)
+    events = (
+        db.session.query(Confirmed, Candidate)
+        .join(Candidate, Confirmed.candidate_id == Candidate.id)
+        .filter(Candidate.year == tomorrow.year, Candidate.month == tomorrow.month, Candidate.day == tomorrow.day)
+        .all()
+    )
+    for cnf, c in events:
+        att = Attendance.query.filter_by(event_id=cnf.id).all()
+        attend_members = [a.name for a in att if a.status == "attend"]
+        send_line_message(
+            f"⏰ 明日はイベントです！\n"
+            f"{c.month}/{c.day} @ {c.gym} {c.start}〜{c.end}\n"
+            f"参加予定: {len(attend_members)}名\n"
+            f"{', '.join(attend_members) if attend_members else 'まだ未登録'}"
+        )
+
 
     # DB create
     with app.app_context():
