@@ -663,17 +663,25 @@ def create_app():
         body = request.get_data(as_text=True)
         data = json.loads(body)
     
-        # チャット種別ごとにIDを取得
-        if "source" in data["events"][0]:
-            src = data["events"][0]["source"]
-            if src["type"] == "user":
+        event = data["events"][0]
+        src = event.get("source", {})
+    
+        # グループ参加イベントでも取得できる
+        if event["type"] == "join" and src.get("type") == "group":
+            print("Group ID:", src["groupId"])
+            return "OK"
+    
+        # メッセージイベントでも取得できる
+        if event["type"] == "message":
+            if src.get("type") == "user":
                 print("User ID:", src["userId"])
-            elif src["type"] == "group":
+            elif src.get("type") == "group":
                 print("Group ID:", src["groupId"])
-            elif src["type"] == "room":
+            elif src.get("type") == "room":
                 print("Room ID:", src["roomId"])
     
         return "OK"
+
 
 
 
