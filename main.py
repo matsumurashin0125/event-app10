@@ -670,7 +670,13 @@ def create_app():
         except Exception as e:
             print("CRON failed:", e)
             return {"status": "error", "message": str(e)}, 500
+    from flask import request
 
+    @app.route("/line_webhook", methods=["POST"])
+    def line_webhook():
+        body = request.get_data(as_text=True)
+        print("LINE Webhook received:", body)
+        return "OK", 200
 
     # DB create
     with app.app_context():
