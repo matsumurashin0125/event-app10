@@ -92,7 +92,7 @@ def create_app():
         times = times[:-1]
         today = datetime.now(tz=LOCAL_TZ)
         base = (today.replace(day=1) + timedelta(days=92)).replace(day=1)
-        years = [base.year, base.year + 1]
+        years = [base.year - 1, base.year, base.year + 1]
         months = list(range(1, 13))
         days = list(range(1, 32))
         confirmed_ids = { c.candidate_id for c in Confirmed.query.all() }
