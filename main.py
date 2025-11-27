@@ -136,7 +136,26 @@ def create_app():
                 c = Candidate.query.get(c_id)
                 d = date(c.year, c.month, c.day)
                 youbi = ["月","火","水","木","金","土","日"][d.weekday()]
-                notify_line(f"📌 日程が確定しました\n{c.month}/{c.day}（{youbi}） {c.gym}\n{c.start}〜{c.end}")
+                start_g = start_dt.strftime("%Y%m%dT%H%M%SZ")
+                end_g   = end_dt.strftime("%Y%m%dT%H%M%SZ")
+                
+                google_calendar_url = (
+                    "https://calendar.google.com/calendar/render?action=TEMPLATE"
+                    f"&text={title}"
+                    f"&dates={start_g}/{end_g}"
+                    f"&details=イベント情報: {title}"
+                )
+                
+                # --- LINE通知内容
+                message = (
+                    f"📌 イベントが確定しました！\n\n"
+                    f"🗓 タイトル: {title}\n"
+                    f"⏰ 日時: {date_str}\n\n"
+                    f"📥 参加登録はこちら👇\n{event_page_url}\n\n"
+                    f"📅 Googleカレンダーに追加👇\n{google_calendar_url}"
+                )
+
+                notify_line(message)
             return redirect(url_for("confirm"))
         confirmed = (
             db.session.query(Confirmed, Candidate)
