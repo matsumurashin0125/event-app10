@@ -628,22 +628,22 @@ def create_app():
             print("LINE Error:", e)
 
     def send_reminder_for_tomorrow():
-    tomorrow = datetime.now(LOCAL_TZ).date() + timedelta(days=1)
-    events = (
-        db.session.query(Confirmed, Candidate)
-        .join(Candidate, Confirmed.candidate_id == Candidate.id)
-        .filter(Candidate.year == tomorrow.year, Candidate.month == tomorrow.month, Candidate.day == tomorrow.day)
-        .all()
-    )
-    for cnf, c in events:
-        att = Attendance.query.filter_by(event_id=cnf.id).all()
-        attend_members = [a.name for a in att if a.status == "attend"]
-        send_line_message(
-            f"⏰ 明日はイベントです！\n"
-            f"{c.month}/{c.day} @ {c.gym} {c.start}〜{c.end}\n"
-            f"参加予定: {len(attend_members)}名\n"
-            f"{', '.join(attend_members) if attend_members else 'まだ未登録'}"
+        tomorrow = datetime.now(LOCAL_TZ).date() + timedelta(days=1)
+        events = (
+            db.session.query(Confirmed, Candidate)
+            .join(Candidate, Confirmed.candidate_id == Candidate.id)
+            .filter(Candidate.year == tomorrow.year, Candidate.month == tomorrow.month, Candidate.day == tomorrow.day)
+            .all()
         )
+        for cnf, c in events:
+            att = Attendance.query.filter_by(event_id=cnf.id).all()
+            attend_members = [a.name for a in att if a.status == "attend"]
+            send_line_message(
+                f"⏰ 明日はイベントです！\n"
+                f"{c.month}/{c.day} @ {c.gym} {c.start}〜{c.end}\n"
+                f"参加予定: {len(attend_members)}名\n"
+                f"{', '.join(attend_members) if attend_members else 'まだ未登録'}"
+            )
 
 
     # DB create
