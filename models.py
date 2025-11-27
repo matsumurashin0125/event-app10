@@ -32,3 +32,10 @@ class Attendance(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     event = db.relationship("Confirmed")
+
+class CronLog(db.Model):
+    __tablename__ = "cron_logs"
+    id = db.Column(db.Integer, primary_key=True)
+    executed_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    status = db.Column(db.String(20), nullable=False)  # success / failed
+    message = db.Column(db.Text)
