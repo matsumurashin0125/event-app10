@@ -161,8 +161,8 @@ def create_app():
                 # LINE通知
                 message = (
                     f"📌 イベントが確定しました！\n\n"
-                    f"🗓 {date_str}\n"
-                    f"🏸 {c.gym}\n\n"
+                    f"🗓 {date_str}\n\n"
+                    f"🏠 {c.gym}\n\n"
                     f"📥 参加登録はこちら👇\n{event_page_url}\n\n"
                     f"📅 Googleカレンダーに追加👇\n{google_calendar_url}"
                 )
