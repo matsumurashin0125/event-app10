@@ -136,24 +136,36 @@ def create_app():
                 c = Candidate.query.get(c_id)
                 d = date(c.year, c.month, c.day)
                 youbi = ["月","火","水","木","金","土","日"][d.weekday()]
-                start_g = start_dt.strftime("%Y%m%dT%H%M%SZ")
-                end_g   = end_dt.strftime("%Y%m%dT%H%M%SZ")
-                
+                date_str = f"{c.month}/{c.day}（{youbi}） {c.start}〜{c.end}"
+                title = f"{c.gym}"
+        
+                # Googleカレンダー (UTC 変換)
+                h1, m1 = map(int, c.start.split(":"))
+                h2, m2 = map(int, c.end.split(":"))
+                start_dt = datetime(c.year, c.month, c.day, h1, m1, tzinfo=LOCAL_TZ)
+                end_dt   = datetime(c.year, c.month, c.day, h2, m2, tzinfo=LOCAL_TZ)
+                start_g = start_dt.astimezone(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+                end_g   = end_dt.astimezone(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+        
                 google_calendar_url = (
                     "https://calendar.google.com/calendar/render?action=TEMPLATE"
                     f"&text={title}"
                     f"&dates={start_g}/{end_g}"
-                    f"&details=イベント情報: {title}"
+                    f"&details={title}"
                 )
-                
-                # --- LINE通知内容
+        
+                # 参加画面URL
+                event_page_url = url_for("register", _external=True)
+        
+                # LINE通知
                 message = (
                     f"📌 イベントが確定しました！\n\n"
-                    f"🗓 タイトル: {title}\n"
-                    f"⏰ 日時: {date_str}\n\n"
+                    f"🗓 {date_str}\n"
+                    f"🏸 {c.gym}\n\n"
                     f"📥 参加登録はこちら👇\n{event_page_url}\n\n"
                     f"📅 Googleカレンダーに追加👇\n{google_calendar_url}"
                 )
+                send_line_message(message)
 
                 notify_line(message)
             return redirect(url_for("confirm"))
