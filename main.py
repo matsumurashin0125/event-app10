@@ -659,6 +659,15 @@ def create_app():
                 f"参加予定: {len(attend_members)}名\n"
                 f"{', '.join(attend_members) if attend_members else 'まだ未登録'}"
             )
+            
+    @app.route("/cron_reminder", methods=["POST"])
+    def cron_reminder():
+        token = request.headers.get("X-CRON-TOKEN")
+        if token != os.getenv("CRON_TOKEN"):
+            return "Unauthorized", 401
+    
+        send_reminder_for_tomorrow()
+        return "OK", 200
 
 
     # DB create
