@@ -429,7 +429,7 @@ def create_app():
         Confirmed.query.filter_by(candidate_id=id).delete()
         db.session.delete(cand)
         db.session.commit()
-        return redirect(url_for("admin_menu"))
+        return redirect(url_for("confirm"))
 
     @app.route("/attendance/<int:id>/edit", methods=["GET", "POST"])
     def edit_attendance(id):
