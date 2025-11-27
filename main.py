@@ -8,6 +8,7 @@ from datetime import datetime, timedelta, date, timezone
 from zoneinfo import ZoneInfo
 from flask import Flask, render_template, request, redirect, url_for, session
 import traceback
+import json
 
 from models import db, Candidate, Confirmed, Attendance
 from linebot import LineBotApi
