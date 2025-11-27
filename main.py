@@ -644,6 +644,12 @@ def create_app():
                 f"参加予定: {len(attend_members)}名\n"
                 f"{', '.join(attend_members) if attend_members else 'まだ未登録'}"
             )
+            
+    @app.route("/line_webhook", methods=["POST"])
+    def line_webhook():
+        body = request.get_data(as_text=True)
+        print("[Webhook受信] →", body)
+        return "OK"
 
 
     # DB create
