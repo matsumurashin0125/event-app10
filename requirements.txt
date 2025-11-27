@@ -6,3 +6,4 @@ Flask-SQLAlchemy
 sendgrid
 pytz
 sendgrid>=6.10.0
+line-bot-sdk 
