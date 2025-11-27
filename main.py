@@ -166,8 +166,7 @@ def create_app():
                     f"📅 Googleカレンダーに追加👇\n{google_calendar_url}"
                 )
                 send_line_message(message)
-
-                notify_line(message)
+                
             return redirect(url_for("confirm"))
         confirmed = (
             db.session.query(Confirmed, Candidate)
