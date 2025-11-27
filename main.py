@@ -280,9 +280,12 @@ def create_app():
     @app.route("/register", methods=["GET"])
     def register():
         user_name = session.get("user_name")
-        candidates = Candidate.query.order_by(
-            Candidate.year.asc(), Candidate.month.asc(), Candidate.day.asc(), Candidate.start.asc()
-        ).all()
+        candidates = (
+            db.session.query(Candidate)
+            .join(Confirmed, Candidate.id == Confirmed.candidate_id)
+            .order_by(Candidate.year.asc(), Candidate.month.asc(), Candidate.day.asc(), Candidate.start.asc())
+            .all()
+        )
 
         # candidates に confirmed_id を付与する
         for c in candidates:
