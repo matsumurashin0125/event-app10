@@ -2,13 +2,17 @@ name: Daily Reminder
 
 on:
   schedule:
-    - cron: "40 12 * * *"  # 日本時間20:00 = UTC11:00
+    - cron: "55 12 * * *"  
   workflow_dispatch:
 
 jobs:
   run:
     runs-on: ubuntu-latest
     steps:
-      - name: Send webhook to Render app
+      - name: Send webhook to Render app (with retry)
         run: |
-          curl -X POST https://event-app10.onrender.com/cron_reminder
+          for i in 1 2 3; do
+            curl -X POST https://event-app10.onrender.com/cron_reminder && break
+            echo "Retrying in 5 seconds..."
+            sleep 5
+          done
