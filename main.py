@@ -413,7 +413,8 @@ def create_app():
             cand.start = request.form["start"]
             cand.end = request.form["end"]
             db.session.commit()
-            notify_line(f"✏️ 確定日程が変更されました\n{cand.month}/{cand.day} {cand.gym}\n{cand.start}〜{cand.end}")
+            if Confirmed.query.filter_by(candidate_id=cand.id).first():
+                send_line_message(f"✏️ 確定日程が変更されました\n{cand.month}/{cand.day} {cand.gym}\n{cand.start}〜{cand.end}")
             return redirect(url_for("confirm"))
         return render_template("edit_candidate.html", cand=cand, gyms=gyms, times=times)
 
