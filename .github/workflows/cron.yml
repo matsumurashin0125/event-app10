@@ -1,0 +1,14 @@
+name: Daily Reminder
+
+on:
+  schedule:
+    - cron: "40 12 * * *"  # 日本時間20:00 = UTC11:00
+  workflow_dispatch:
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send webhook to Render app
+        run: |
+          curl -X POST https://event-app10.onrender.com/cron_reminder
