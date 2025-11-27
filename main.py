@@ -663,7 +663,7 @@ def create_app():
     @app.route("/cron_reminder", methods=["POST"])
     def cron_reminder():
         try:
-            send_reminder_to_all_events()  # ← 前日リマインダー処理の関数
+            send_reminder_for_tomorrow()  # ← 前日リマインダー処理の関数
             print("CRON executed successfully")
             return {"status": "ok"}, 200
     
