@@ -98,7 +98,7 @@
                 <p>参加状況：<span style="color:#999;">未確定</span></p>
             {% endif %}
 
-            <a class="btn" href="{{ url_for('register_event', candidate_id=c.id) }}">この日で登録</a>
+            <a class="btn" href="{{ url_for('register_event', candidate_id=c.id) }}?month={{ c.month }}">この日で登録</a>
         </div>
         {% endfor %}
     </div>
