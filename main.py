@@ -235,13 +235,20 @@ def create_app():
         candidates_by_month = sort_dict_by_month(candidates_by_month)
         confirmed_by_month = sort_dict_by_month(confirmed_by_month)
 
+        # 月タブ用のキー生成 (例: "2025-11", "2025-12")
+        month_keys = sorted(
+            candidates_by_month.keys(),
+            key=lambda m: (min(c.year for c in candidates_by_month[m]), m)
+        )
+
         return render_template(
             "confirm.html",
             # 古いキーは残さずテンプレで新しい月別構造を使う
             candidates_by_month=candidates_by_month,
             confirmed_by_month=confirmed_by_month,
             confirmed_ids=confirmed_ids,
-            attendance_summary=attendance_summary
+            attendance_summary=attendance_summary,
+            month_keys=month_keys
         )
         
     @app.route("/confirm/<int:candidate_id>/unconfirm", methods=["POST"])
