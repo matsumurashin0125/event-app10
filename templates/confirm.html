@@ -5,41 +5,57 @@
     <link rel="stylesheet" href="/static/style.css">
 
     <style>
-        .tabs { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
         .tab-btn {
-            padding: 6px 14px;
+            padding: 8px 14px;
             border-radius: 6px;
-            background: #eee;
+            background: #bdc3c7;
             cursor: pointer;
             border: none;
-            font-size: 15px;
         }
-        .tab-btn.active { background: #2b7cff; color: white; }
+        .tab-btn.active {
+            background: #2980b9;
+            color: white;
+        }
 
-        .month-block { display: none; }
-        .month-block.active { display: block; }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
 
-        .confirmed { background: #d9ebff; }
-        .date-large { font-size: 18px; font-weight: bold; }
+        .date-large {
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        tr.confirmed {
+            background: #dff0d8;
+        }
     </style>
 </head>
 <body>
 
-<h2>候補日一覧</h2>
+<h2>候補日 & 確定日程（タブで月切替）</h2>
 
-<!-- ▼ 月タブ -->
-<div class="tabs" id="monthTabs"></div>
+<div class="tabs">
+    {% for m in months %}
+        <button class="tab-btn {% if loop.first %}active{% endif %}" onclick="showTab('{{ m }}')">
+            {{ m }}月
+        </button>
+    {% endfor %}
+</div>
 
-<!-- ▼ 月ごとの候補日テーブル -->
-{% set grouped = {} %}
-{% for c in candidates %}
-    {% set m = c.month %}
-    {% if m not in grouped %}{% set _ = grouped.update({m: []}) %}{% endif %}
-    {% set _ = grouped[m].append(c) %}
-{% endfor %}
+{% for m in months %}
+<div id="tab-{{ m }}" class="tab-content {% if loop.first %}active{% endif %}">
 
-{% for month, items in grouped.items() %}
-<div class="month-block" data-month="{{ month }}">
+    <!-- ーーーーーーーー 候補日一覧 ーーーーーーーー -->
+    <h3>候補日一覧（{{ m }}月）</h3>
     <table border="1">
         <tr>
             <th>日付</th>
@@ -50,8 +66,9 @@
             <th>削除</th>
         </tr>
 
-        {% for c in items %}
+        {% for c in candidates[m] %}
         <tr class="{% if c.id in confirmed_ids %}confirmed{% endif %}">
+
             <td class="date-large">{{ c.md }}</td>
             <td>{{ c.gym }}</td>
             <td>{{ c.start }} 〜 {{ c.end }}</td>
@@ -83,70 +100,71 @@
         </tr>
         {% endfor %}
     </table>
+
+    <br><hr>
+
+    <!-- ーーーーーーーー 確定日程 ーーーーーーーー -->
+    <h3>確定日程（{{ m }}月）</h3>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>日付</th>
+                <th>体育館</th>
+                <th>時間</th>
+                <th>参加人数</th>
+                <th>不参加人数</th>
+                <th>参加メンバー</th>
+                <th>不参加メンバー</th>
+                <th>編集</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for confirm, c in confirmed[m] %}
+            <tr>
+                <td class="date-large">{{ c.md }}</td>
+                <td>{{ c.gym }}</td>
+                <td>{{ c.start }} 〜 {{ c.end }}</td>
+
+                {% set summary = attendance_summary.get(confirm.id, {}) %}
+                <td>{{ summary.attend_count if summary.attend_count is defined else 0 }}</td>
+                <td>{{ summary.absent_count if summary.absent_count is defined else 0 }}</td>
+                <td>
+                    {% if summary.attend_members %}
+                        {{ summary.attend_members | join(", ") }}
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+                <td>
+                    {% if summary.absent_members %}
+                        {{ summary.absent_members | join(", ") }}
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+                <td>
+                    <a href="{{ url_for('manage_event_attendance', event_id=confirm.id) }}" class="btn">参加者編集</a>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
 </div>
 {% endfor %}
-
-<br><hr>
-
-<h2>確定済み日程</h2>
-<table>
-    <thead>
-        <tr>
-            <th>日付</th>
-            <th>体育館</th>
-            <th>時間</th>
-            <th>参加人数</th>
-            <th>不参加人数</th>
-            <th>参加メンバー</th>
-            <th>不参加メンバー</th>
-            <th>編集</th>
-        </tr>
-    </thead>
-    <tbody>
-    {% for confirm, c in confirmed %}
-        <tr>
-            <td class="date-large">{{ c.md }}</td>
-            <td>{{ c.gym }}</td>
-            <td>{{ c.start }} 〜 {{ c.end }}</td>
-
-            {% set summary = attendance_summary.get(confirm.id, {}) %}
-            <td>{{ summary.attend_count or 0 }}</td>
-            <td>{{ summary.absent_count or 0 }}</td>
-            <td>{{ summary.attend_members | join(", ") if summary.attend_members else "-" }}</td>
-            <td>{{ summary.absent_members | join(", ") if summary.absent_members else "-" }}</td>
-            <td><a href="{{ url_for('manage_event_attendance', event_id=confirm.id) }}" class="btn">参加者編集</a></td>
-        </tr>
-    {% endfor %}
-    </tbody>
-</table>
 
 <br>
 <a href="{{ url_for('admin_menu') }}">管理者メニューへ戻る</a>
 
 <script>
-    const groupedMonths = {{ grouped.keys() | list }};
-    const tabsContainer = document.getElementById("monthTabs");
+function showTab(month) {
+    document.querySelectorAll(".tab-btn").forEach(btn => btn.classList.remove("active"));
+    document.querySelectorAll(".tab-content").forEach(tab => tab.classList.remove("active"));
 
-    groupedMonths.forEach(m => {
-        const btn = document.createElement("button");
-        btn.className = "tab-btn";
-        btn.textContent = `${m}月`;
-        btn.dataset.month = m;
-        tabsContainer.appendChild(btn);
-    });
-
-    const tabBtns = document.querySelectorAll(".tab-btn");
-    const blocks = document.querySelectorAll(".month-block");
-
-    function activate(month) {
-        tabBtns.forEach(b => b.classList.toggle("active", b.dataset.month == month));
-        blocks.forEach(b => b.classList.toggle("active", b.dataset.month == month));
-    }
-
-    // 初期表示：最も小さい月
-    activate(groupedMonths.sort()[0]);
-
-    tabBtns.forEach(b => b.addEventListener("click", () => activate(b.dataset.month)));
+    event.target.classList.add("active");
+    document.getElementById("tab-" + month).classList.add("active");
+}
 </script>
+
 </body>
 </html>
