@@ -18,33 +18,41 @@
         .confirmed { background: #c5ffc8; }
     </style>
 
+    <script>
+        function showTab(month) {
+            document.querySelectorAll('.tab-content').forEach(e => e.classList.remove('active'));
+            document.querySelector(`#tab-${month}`).classList.add('active');
+
+            document.querySelectorAll('.tab-buttons button').forEach(e => e.classList.remove('active'));
+            document.querySelector(`#btn-${month}`).classList.add('active');
+        }
+    </script>
 </head>
 <body>
 
 <h1>日程管理</h1>
 
-<!-- 🔹 月タブ -->
+<!-- タブボタン（月のみ表示） -->
 <div class="tab-buttons">
-    {% for y, m in candidates_by_tab.keys() %}
-        <button class="tab-btn" id="btn-{{ y }}-{{ m }}" data-tab="{{ y }}-{{ m }}">
-            {{ y }}年{{ m }}月
+    {% for month in candidates_by_month.keys()|list|sort %}
+        <button id="btn-{{ month }}" onclick="showTab('{{ month }}')" {% if loop.first %}class="active"{% endif %}>
+            {{ month }}月
         </button>
     {% endfor %}
 </div>
 
-<!-- 🔹 タブごとの中身 -->
-{% for y, m in candidates_by_tab.keys() %}
-{% set key = y ~ "-" ~ m %}
-<div class="tab-content" id="tab-{{ key }}">
+<!-- タブごとの内容 -->
+{% for month in candidates_by_month.keys()|list|sort %}
+<div id="tab-{{ month }}" class="tab-content {% if loop.first %}active{% endif %}">
 
-    <h2>{{ y }}年{{ m }}月の候補日一覧</h2>
+    <h2>{{ month }}月の候補日一覧</h2>
     <table border="1">
         <tr>
             <th>日付</th><th>体育館</th><th>時間</th>
             <th>確定</th><th>編集</th><th>削除</th>
         </tr>
 
-        {% for c in candidates_by_tab[(y, m)] %}
+        {% for c in candidates_by_month[month] %}
         <tr class="{% if c.id in confirmed_ids %}confirmed{% endif %}">
             <td class="date-large">{{ c.md }}</td>
             <td>{{ c.gym }}</td>
@@ -80,7 +88,7 @@
 
     <br><hr>
 
-    <h2>{{ y }}年{{ m }}月の確定済み日程</h2>
+    <h2>{{ month }}月の確定済み日程</h2>
     <table border="1">
         <tr>
             <th>日付</th><th>体育館</th><th>時間</th>
@@ -89,7 +97,7 @@
             <th>編集</th>
         </tr>
 
-        {% for confirm, c in confirmed_by_tab.get((y, m), []) %}
+        {% for confirm, c in confirmed_by_month.get(month, []) %}
             {% set summary = attendance_summary.get(confirm.id, {}) %}
             <tr>
                 <td class="date-large">{{ c.md }}</td>
@@ -111,31 +119,6 @@
 
 <br>
 <a href="{{ url_for('admin_menu') }}">管理者メニューへ戻る</a>
-
-<script>
-/* 🔥 タブ切替 */
-function activateTab(key) {
-    document.querySelectorAll('.tab-content').forEach(e => e.classList.remove('active'));
-    document.querySelectorAll('.tab-btn').forEach(e => e.classList.remove('active'));
-
-    document.getElementById('tab-' + key).classList.add('active');
-    document.getElementById('btn-' + key).classList.add('active');
-
-    localStorage.setItem('confirmTab', key);
-}
-
-/* タブクリックイベント */
-document.querySelectorAll('.tab-btn').forEach(btn => {
-    btn.addEventListener('click', () => activateTab(btn.dataset.tab));
-});
-
-/* 前回表示タブを復元 */
-window.addEventListener('DOMContentLoaded', () => {
-    const saved = localStorage.getItem('confirmTab');
-    const first = document.querySelector('.tab-btn')?.dataset.tab;
-    activateTab(saved || first);
-});
-</script>
 
 </body>
 </html>
