@@ -156,7 +156,7 @@ def create_app():
                 )
         
                 # 参加画面URL
-                event_page_url = url_for("register", _external=True)
+                event_page_url = url_for("set_name", _external=True)
         
                 # LINE通知
                 message = (
