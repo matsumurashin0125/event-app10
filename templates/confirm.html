@@ -33,17 +33,20 @@
 <h1>日程管理</h1>
 
 <!-- タブボタン（月のみ表示） -->
+{% set sorted_months = candidates_by_month.keys() | list | sort %}
 <div class="tab-buttons">
-    {% for month in candidates_by_month.keys()|list|sort %}
-        <button id="btn-{{ month }}" onclick="showTab('{{ month }}')" {% if loop.first %}class="active"{% endif %}>
-            {{ month }}月
+    {% for ym in sorted_months %}
+        {% set parts = ym.split('-') %}
+        {% set display_month = parts[1]|int %}  {# 月だけ表示 #}
+        <button id="btn-{{ ym }}" onclick="showTab('{{ ym }}')" class="{% if ym == active_month %}active{% endif %}">
+            {{ display_month }}月
         </button>
     {% endfor %}
 </div>
 
 <!-- タブごとの内容 -->
-{% for month in candidates_by_month.keys()|list|sort %}
-<div id="tab-{{ month }}" class="tab-content {% if loop.first %}active{% endif %}">
+{% for ym in sorted_months %}
+<div id="tab-{{ ym }}" class="tab-content {% if ym == active_month %}active{% endif %}">
 
     <h2>{{ month }}月の候補日一覧</h2>
     <table border="1">
@@ -119,6 +122,30 @@
 
 <br>
 <a href="{{ url_for('admin_menu') }}">管理者メニューへ戻る</a>
+    
+<script>
+    function showTab(month) {
+        document.querySelectorAll('.tab-content').forEach(e => e.classList.remove('active'));
+        document.querySelector(`#tab-${month}`).classList.add('active');
+
+        document.querySelectorAll('.tab-buttons button').forEach(e => e.classList.remove('active'));
+        document.querySelector(`#btn-${month}`).classList.add('active');
+
+        // 現在のタブをURLに残す
+        const url = new URL(window.location);
+        url.searchParams.set('month', month);
+        window.history.replaceState(null, '', url);
+    }
+
+    // 初回ロード時 URL に month 指定がある場合はそのタブを開く
+    window.onload = () => {
+        const url = new URL(window.location);
+        const m = url.searchParams.get('month');
+        if (m && document.querySelector(`#btn-${m}`)) {
+            showTab(m);
+        }
+    };
+</script>
 
 </body>
 </html>
