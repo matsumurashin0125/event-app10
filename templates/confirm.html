@@ -3,104 +3,119 @@
 <head>
     <title>候補日確定</title>
     <link rel="stylesheet" href="/static/style.css">
+
+    <style>
+        .tab-buttons { margin-bottom: 20px; }
+        .tab-buttons button {
+            padding: 10px 15px; margin-right: 5px;
+            cursor: pointer; border: 1px solid #333;
+            background: #f0f0f0;
+        }
+        .tab-buttons button.active { background: #3498db; color: white; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .date-large { font-size: 20px; font-weight: bold; }
+        .confirmed { background: #c5ffc8; }
+    </style>
+
+    <script>
+        function showTab(month) {
+            document.querySelectorAll('.tab-content').forEach(e => e.classList.remove('active'));
+            document.querySelector(`#tab-${month}`).classList.add('active');
+
+            document.querySelectorAll('.tab-buttons button').forEach(e => e.classList.remove('active'));
+            document.querySelector(`#btn-${month}`).classList.add('active');
+        }
+    </script>
 </head>
 <body>
 
-<h2>候補日一覧</h2>
+<h1>日程管理</h1>
 
-<table border="1">
-    <tr>
-        <th>日付</th>
-        <th>体育館</th>
-        <th>時間</th>
-        <th>確定</th>
-        <th>編集</th>
-        <th>削除</th>
-    </tr>
-
-    {% for c in candidates %}
-    <tr class="{% if c.id in confirmed_ids %}confirmed{% endif %}">
-
-        <td class="date-large">{{ c.md }}</td>
-        <td>{{ c.gym }}</td>
-        <td>{{ c.start }} 〜 {{ c.end }}</td>
-
-        <td>
-            {% if c.id in confirmed_ids %}
-                <form method="POST" action="{{ url_for('unconfirm', candidate_id=c.id) }}">
-                    <button style="background:#e67e22; color:white;">確定解除</button>
-                </form>
-            {% else %}
-                <form method="POST" action="{{ url_for('confirm') }}">
-                    <input type="hidden" name="candidate_id" value="{{ c.id }}">
-                    <button>確定</button>
-                </form>
-            {% endif %}
-        </td>
-
-        <td>
-            <form method="GET" action="{{ url_for('edit_candidate', id=c.id) }}">
-                <button>編集</button>
-            </form>
-        </td>
-
-        <td>
-            <form method="POST" action="{{ url_for('delete_candidate', id=c.id) }}">
-                <button onclick="return confirm('この候補日を削除しますか？')">削除</button>
-            </form>
-        </td>
-    </tr>
+<!-- タブボタン（月のみ表示） -->
+<div class="tab-buttons">
+    {% for month in candidates_by_month.keys()|list|sort %}
+        <button id="btn-{{ month }}" onclick="showTab('{{ month }}')" {% if loop.first %}class="active"{% endif %}>
+            {{ month }}月
+        </button>
     {% endfor %}
-</table>
+</div>
 
-<br><hr>
+<!-- タブごとの内容 -->
+{% for month in candidates_by_month.keys()|list|sort %}
+<div id="tab-{{ month }}" class="tab-content {% if loop.first %}active{% endif %}">
 
-<h2>確定済み日程</h2>
-
-<table>
-    <thead>
+    <h2>{{ month }}月の候補日一覧</h2>
+    <table border="1">
         <tr>
-            <th>日付</th>
-            <th>体育館</th>
-            <th>時間</th>
-            <th>参加人数</th>
-            <th>不参加人数</th>
-            <th>参加メンバー</th>
-            <th>不参加メンバー</th>
-            <th>編集</th>
+            <th>日付</th><th>体育館</th><th>時間</th>
+            <th>確定</th><th>編集</th><th>削除</th>
         </tr>
-    </thead>
-    <tbody>
-    {% for confirm, c in confirmed %}
-        <tr>
+
+        {% for c in candidates_by_month[month] %}
+        <tr class="{% if c.id in confirmed_ids %}confirmed{% endif %}">
             <td class="date-large">{{ c.md }}</td>
             <td>{{ c.gym }}</td>
-            <td>{{ c.start }} 〜 {{ c.end }}</td>
+            <td>{{ c.start }}〜{{ c.end }}</td>
 
-            {% set summary = attendance_summary.get(confirm.id, {}) %}
-            <td>{{ summary.attend_count if summary.attend_count is defined else 0 }}</td>
-            <td>{{ summary.absent_count if summary.absent_count is defined else 0 }}</td>
             <td>
-                {% if summary.attend_members %}
-                    {{ summary.attend_members | join(", ") }}
+                {% if c.id in confirmed_ids %}
+                    <form method="POST" action="{{ url_for('unconfirm', candidate_id=c.id) }}">
+                        <button style="background:#e67e22; color:white;">確定解除</button>
+                    </form>
                 {% else %}
-                    -
+                    <form method="POST" action="{{ url_for('confirm') }}">
+                        <input type="hidden" name="candidate_id" value="{{ c.id }}">
+                        <button>確定</button>
+                    </form>
                 {% endif %}
             </td>
+
             <td>
-                {% if summary.absent_members %}
-                    {{ summary.absent_members | join(", ") }}
-                {% else %}
-                    -
-                {% endif %}
+                <form method="GET" action="{{ url_for('edit_candidate', id=c.id) }}">
+                    <button>編集</button>
+                </form>
             </td>
+
             <td>
-                <a href="{{ url_for('manage_event_attendance', event_id=confirm.id) }}" class="btn">参加者編集</a>
+                <form method="POST" action="{{ url_for('delete_candidate', id=c.id) }}">
+                    <button onclick="return confirm('この候補日を削除しますか？')">削除</button>
+                </form>
             </td>
         </tr>
-    {% endfor %}
-    </tbody>
-</table>
+        {% endfor %}
+    </table>
+
+    <br><hr>
+
+    <h2>{{ month }}月の確定済み日程</h2>
+    <table border="1">
+        <tr>
+            <th>日付</th><th>体育館</th><th>時間</th>
+            <th>参加人数</th><th>不参加人数</th>
+            <th>参加メンバー</th><th>不参加メンバー</th>
+            <th>編集</th>
+        </tr>
+
+        {% for confirm, c in confirmed_by_month.get(month, []) %}
+            {% set summary = attendance_summary.get(confirm.id, {}) %}
+            <tr>
+                <td class="date-large">{{ c.md }}</td>
+                <td>{{ c.gym }}</td>
+                <td>{{ c.start }}〜{{ c.end }}</td>
+                <td>{{ summary.attend_count or 0 }}</td>
+                <td>{{ summary.absent_count or 0 }}</td>
+                <td>{{ summary.attend_members | join(", ") if summary.attend_members else "-" }}</td>
+                <td>{{ summary.absent_members | join(", ") if summary.absent_members else "-" }}</td>
+                <td>
+                    <a href="{{ url_for('manage_event_attendance', event_id=confirm.id) }}" class="btn">参加者編集</a>
+                </td>
+            </tr>
+        {% endfor %}
+    </table>
+
+</div>
+{% endfor %}
 
 <br>
 <a href="{{ url_for('admin_menu') }}">管理者メニューへ戻る</a>
