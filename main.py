@@ -217,39 +217,40 @@ def create_app():
                 "absent_members": absent_members,
             }
 
-        # ---- 月ごとにグループ化（テンプレ用） ----
+        # ---- 年月ごとにグループ化（テンプレ用） ----
         from collections import defaultdict, OrderedDict
-
-        candidates_by_month = defaultdict(list)     # month(int) -> [candidate_dict,...]
+        
+        # (year, month) -> [candidate_dict, ...]
+        candidates_by_tab = defaultdict(list)
         for c in candidates_fmt:
-            candidates_by_month[int(c["month"])].append(c)
-
-        confirmed_by_month = defaultdict(list)      # month(int) -> [(Confirmed, candidate_dict), ...]
+            ym = (int(c["year"]), int(c["month"]))
+            candidates_by_tab[ym].append(c)
+        
+        # (year, month) -> [(Confirmed, candidate_dict), ...]
+        confirmed_by_tab = defaultdict(list)
         for cnf, c in confirmed_fmt:
-            confirmed_by_month[int(c["month"])].append((cnf, c))
-
-        # 月キーを昇順に並べ替えた OrderedDict にしてテンプレへ（Jinja での順序安定のため）
-        def sort_dict_by_month(d):
-            return OrderedDict(sorted(d.items(), key=lambda x: x[0]))
-
-        candidates_by_month = sort_dict_by_month(candidates_by_month)
-        confirmed_by_month = sort_dict_by_month(confirmed_by_month)
-
-        # 月タブ用のキー生成 (例: "2025-11", "2025-12")
-        month_keys = sorted(
-            candidates_by_month.keys(),
-            key=lambda m: (min(c.year for c in candidates_by_month[m]), int(m))
-        )
-
+            ym = (int(c["year"]), int(c["month"]))
+            confirmed_by_tab[ym].append((cnf, c))
+        
+        # (year, month) の昇順にソート
+        def sort_tabs(d):
+            return OrderedDict(sorted(d.items(), key=lambda x: (x[0][0], x[0][1])))
+        
+        candidates_by_tab = sort_tabs(candidates_by_tab)
+        confirmed_by_tab  = sort_tabs(confirmed_by_tab)
+        
+        # タブキー一覧（例: "2025-11", "2026-01"）
+        tab_keys = [f"{y}-{m}" for (y, m) in candidates_by_tab.keys()]
+        
         return render_template(
             "confirm.html",
-            # 古いキーは残さずテンプレで新しい月別構造を使う
-            candidates_by_month=candidates_by_month,
-            confirmed_by_month=confirmed_by_month,
+            candidates_by_tab=candidates_by_tab,
+            confirmed_by_tab=confirmed_by_tab,
             confirmed_ids=confirmed_ids,
             attendance_summary=attendance_summary,
-            month_keys=month_keys
+            tab_keys=tab_keys
         )
+
         
     @app.route("/confirm/<int:candidate_id>/unconfirm", methods=["POST"])
     def unconfirm(candidate_id):
