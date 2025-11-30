@@ -238,7 +238,7 @@ def create_app():
         # 月タブ用のキー生成 (例: "2025-11", "2025-12")
         month_keys = sorted(
             candidates_by_month.keys(),
-            key=lambda m: (min(c.[year] for c in candidates_by_month[m]), int(m))
+            key=lambda m: (min(c['year'] for c in candidates_by_month[m]), int(m))
         )
 
         return render_template(
