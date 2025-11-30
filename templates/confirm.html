@@ -34,7 +34,7 @@
 
 <!-- タブボタン（月のみ表示） -->
 <div class="tab-buttons">
-    {% for month in candidates_by_month.keys()|list|sort %}
+    {% for month in month_keys %}
         <button id="btn-{{ month }}" onclick="showTab('{{ month }}')" {% if loop.first %}class="active"{% endif %}>
             {{ month }}月
         </button>
@@ -42,7 +42,7 @@
 </div>
 
 <!-- タブごとの内容 -->
-{% for month in candidates_by_month.keys()|list|sort %}
+{% for month in month_keys %}
 <div id="tab-{{ month }}" class="tab-content {% if loop.first %}active{% endif %}">
 
     <h2>{{ month }}月の候補日一覧</h2>
@@ -119,6 +119,26 @@
 
 <br>
 <a href="{{ url_for('admin_menu') }}">管理者メニューへ戻る</a>
+
+<script>
+    // タブクリック → 保存
+    function showTab(month) {
+        localStorage.setItem("lastMonthTab", month);
+        document.querySelectorAll('.tab-content').forEach(e => e.classList.remove('active'));
+        document.querySelector('#tab-' + month).classList.add('active');
+
+        document.querySelectorAll('.tab-buttons button').forEach(e => e.classList.remove('active'));
+        document.querySelector('#btn-' + month).classList.add('active');
+    }
+
+    // ページ読み込み → 復元
+    window.addEventListener("DOMContentLoaded", () => {
+        const saved = localStorage.getItem("lastMonthTab");
+        const defaultMonth = document.querySelector(".tab-buttons button").id.replace("btn-", "");
+
+        showTab(saved ?? defaultMonth);
+    });
+</script>
 
 </body>
 </html>
