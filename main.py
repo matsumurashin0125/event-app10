@@ -418,7 +418,7 @@ def create_app():
                         app.logger.error("ICS send failed: %s", e)
                         app.logger.error(traceback.format_exc())
 
-            return redirect(url_for("register"))
+            return redirect(url_for("register") + f"?month={candidate.month}")
     
         attendance = Attendance.query.filter_by(event_id=event.id).all()
     
