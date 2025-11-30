@@ -24,9 +24,9 @@
 
 <!-- タブボタン（月） -->
 <div class="tab-buttons">
-    {% for month in sorted_months %}
-        <button id="btn-{{ month }}" onclick="showTab('{{ month }}')" class="{% if month == active_month %}active{% endif %}">
-            {{ month }}月
+    {% for ym in sorted_months %}
+        <button id="btn-{{ ym }}" onclick="showTab('{{ ym }}')" class="{% if ym == active_month %}active{% endif %}">
+            {{ ym }}月
         </button>
     {% endfor %}
 </div>
