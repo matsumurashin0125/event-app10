@@ -46,7 +46,7 @@
     </form>
 
     <!-- ★ register画面に戻る -->
-    <a class="sub-btn" href="{{ url_for('register') }}">← 参加一覧に戻る</a>
+    <a class="sub-btn" href="{{ url_for('register') }}?month={{ candidate.month }}">← 参加一覧に戻る</a>
 
     <!-- ★ set_name画面へ -->
     <a class="sub-btn" href="{{ url_for('set_name') }}">👤 名前入力画面へ</a>
