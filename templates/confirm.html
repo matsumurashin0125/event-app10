@@ -120,5 +120,30 @@
 <br>
 <a href="{{ url_for('admin_menu') }}">管理者メニューへ戻る</a>
 
+<script>
+    function showTab(month) {
+        document.querySelectorAll('.tab-content').forEach(e => e.classList.remove('active'));
+        document.querySelector(`#tab-${month}`).classList.add('active');
+
+        document.querySelectorAll('.tab-buttons button').forEach(e => e.classList.remove('active'));
+        document.querySelector(`#btn-${month}`).classList.add('active');
+
+        // ★ タブ変更を保存
+        localStorage.setItem("confirmPageLastTab", month);
+    }
+
+    // ★ 読み込み時に保存したタブを復元
+    document.addEventListener("DOMContentLoaded", () => {
+        const saved = localStorage.getItem("confirmPageLastTab");
+        if (saved && document.getElementById(`btn-${saved}`)) {
+            showTab(saved);
+        } else {
+            // タブが保存されていなければ最初のタブ
+            const first = document.querySelector(".tab-buttons button");
+            if (first) first.click();
+        }
+    });
+</script>
+
 </body>
 </html>
