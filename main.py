@@ -169,6 +169,7 @@ def create_app():
                 send_line_message(message)
                 
             return redirect(url_for("confirm"))
+            
         confirmed = (
             db.session.query(Confirmed, Candidate)
             .join(Candidate, Confirmed.candidate_id == Candidate.id)
@@ -206,8 +207,9 @@ def create_app():
             
         return render_template(
             "confirm.html",
-            candidates=candidates_fmt,
-            confirmed=confirmed_fmt,
+            months=months,                # [1, 2, 3, ...]
+            candidates=candidates_by_month,  # { 1: [Candidate...], 2: [...], ... }
+            confirmed=confirmed_by_month,    # { 1: [(Confirmed, Candidate), ...], ... }
             confirmed_ids=confirmed_ids,
             attendance_summary=attendance_summary
         )
