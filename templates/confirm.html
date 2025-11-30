@@ -17,41 +17,32 @@
         .date-large { font-size: 20px; font-weight: bold; }
         .confirmed { background: #c5ffc8; }
     </style>
-
-    <script>
-        function showTab(month) {
-            document.querySelectorAll('.tab-content').forEach(e => e.classList.remove('active'));
-            document.querySelector(`#tab-${month}`).classList.add('active');
-
-            document.querySelectorAll('.tab-buttons button').forEach(e => e.classList.remove('active'));
-            document.querySelector(`#btn-${month}`).classList.add('active');
-        }
-    </script>
 </head>
 <body>
 
 <h1>日程管理</h1>
 
-<!-- タブボタン（月のみ表示） -->
-{% for month in sorted_months %}
-<button id="btn-{{ month }}" onclick="showTab('{{ month }}')" class="{% if month == active_month %}active{% endif %}">
-    {{ month }}月
-</button>
-{% endfor %}
+<!-- タブボタン（月） -->
+<div class="tab-buttons">
+    {% for month in sorted_months %}
+        <button id="btn-{{ month }}" onclick="showTab('{{ month }}')" class="{% if month == active_month %}active{% endif %}">
+            {{ month }}月
+        </button>
+    {% endfor %}
 </div>
 
 <!-- タブごとの内容 -->
 {% for ym in sorted_months %}
 <div id="tab-{{ ym }}" class="tab-content {% if ym == active_month %}active{% endif %}">
 
-    <h2>{{ month }}月の候補日一覧</h2>
+    <h2>{{ ym }}月の候補日一覧</h2>
     <table border="1">
         <tr>
             <th>日付</th><th>体育館</th><th>時間</th>
             <th>確定</th><th>編集</th><th>削除</th>
         </tr>
 
-        {% for c in candidates_by_month[month] %}
+        {% for c in candidates_by_month[ym] %}
         <tr class="{% if c.id in confirmed_ids %}confirmed{% endif %}">
             <td class="date-large">{{ c.md }}</td>
             <td>{{ c.gym }}</td>
@@ -59,11 +50,11 @@
 
             <td>
                 {% if c.id in confirmed_ids %}
-                    <form method="POST" action="{{ url_for('unconfirm', candidate_id=c.id) }}">
+                    <form method="POST" action="{{ url_for('unconfirm', candidate_id=c.id, month=ym) }}">
                         <button style="background:#e67e22; color:white;">確定解除</button>
                     </form>
                 {% else %}
-                    <form method="POST" action="{{ url_for('confirm') }}">
+                    <form method="POST" action="{{ url_for('confirm', month=ym) }}">
                         <input type="hidden" name="candidate_id" value="{{ c.id }}">
                         <button>確定</button>
                     </form>
@@ -71,13 +62,13 @@
             </td>
 
             <td>
-                <form method="GET" action="{{ url_for('edit_candidate', id=c.id) }}">
+                <form method="GET" action="{{ url_for('edit_candidate', id=c.id, month=ym) }}">
                     <button>編集</button>
                 </form>
             </td>
 
             <td>
-                <form method="POST" action="{{ url_for('delete_candidate', id=c.id) }}">
+                <form method="POST" action="{{ url_for('delete_candidate', id=c.id, month=ym) }}">
                     <button onclick="return confirm('この候補日を削除しますか？')">削除</button>
                 </form>
             </td>
@@ -87,7 +78,7 @@
 
     <br><hr>
 
-    <h2>{{ month }}月の確定済み日程</h2>
+    <h2>{{ ym }}月の確定済み日程</h2>
     <table border="1">
         <tr>
             <th>日付</th><th>体育館</th><th>時間</th>
@@ -96,7 +87,7 @@
             <th>編集</th>
         </tr>
 
-        {% for confirm, c in confirmed_by_month.get(month, []) %}
+        {% for confirm, c in confirmed_by_month.get(ym, []) %}
             {% set summary = attendance_summary.get(confirm.id, {}) %}
             <tr>
                 <td class="date-large">{{ c.md }}</td>
@@ -107,7 +98,7 @@
                 <td>{{ summary.attend_members | join(", ") if summary.attend_members else "-" }}</td>
                 <td>{{ summary.absent_members | join(", ") if summary.absent_members else "-" }}</td>
                 <td>
-                    <a href="{{ url_for('manage_event_attendance', event_id=confirm.id) }}" class="btn">参加者編集</a>
+                    <a href="{{ url_for('manage_event_attendance', event_id=confirm.id, month=ym) }}" class="btn">参加者編集</a>
                 </td>
             </tr>
         {% endfor %}
@@ -118,7 +109,7 @@
 
 <br>
 <a href="{{ url_for('admin_menu') }}">管理者メニューへ戻る</a>
-    
+
 <script>
     function showTab(month) {
         document.querySelectorAll('.tab-content').forEach(e => e.classList.remove('active'));
@@ -127,16 +118,16 @@
         document.querySelectorAll('.tab-buttons button').forEach(e => e.classList.remove('active'));
         document.querySelector(`#btn-${month}`).classList.add('active');
 
-        // 現在のタブをURLに残す
+        // URLに現在のタブを記録
         const url = new URL(window.location);
         url.searchParams.set('month', month);
         window.history.replaceState(null, '', url);
     }
 
+    // 初期タブ
     window.onload = () => {
         showTab("{{ active_month }}");
     };
-
 </script>
 
 </body>
