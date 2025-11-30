@@ -124,11 +124,9 @@ def create_app():
 
     @app.route("/confirm", methods=["GET", "POST"])
     def confirm():
-        # 全候補を取得（ソート済み）
         candidates = Candidate.query.order_by(
             Candidate.year.asc(), Candidate.month.asc(), Candidate.day.asc(), Candidate.start.asc()
         ).all()
-
         if request.method == "POST":
             c_id = int(request.form["candidate_id"])
             exists = Confirmed.query.filter_by(candidate_id=c_id).first()
@@ -141,7 +139,7 @@ def create_app():
                 youbi = ["月","火","水","木","金","土","日"][d.weekday()]
                 date_str = f"{c.month}/{c.day}（{youbi}） {c.start}〜{c.end}"
                 title = f"{c.gym}"
-
+        
                 # Googleカレンダー (UTC 変換)
                 h1, m1 = map(int, c.start.split(":"))
                 h2, m2 = map(int, c.end.split(":"))
@@ -149,17 +147,17 @@ def create_app():
                 end_dt   = datetime(c.year, c.month, c.day, h2, m2, tzinfo=LOCAL_TZ)
                 start_g = start_dt.astimezone(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
                 end_g   = end_dt.astimezone(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
-
+        
                 google_calendar_url = (
                     "https://calendar.google.com/calendar/render?action=TEMPLATE"
                     f"&text={title}"
                     f"&dates={start_g}/{end_g}"
                     f"&details={title}"
                 )
-
+        
                 # 参加画面URL
                 event_page_url = url_for("register", _external=True)
-
+        
                 # LINE通知
                 message = (
                     f"📌 イベントが確定しました！\n\n"
@@ -169,110 +167,47 @@ def create_app():
                     f"📅 Googleカレンダーに追加👇\n{google_calendar_url}"
                 )
                 send_line_message(message)
-
+                
             return redirect(url_for("confirm"))
-
-        # 確定リストを取得（候補と join）
         confirmed = (
             db.session.query(Confirmed, Candidate)
             .join(Candidate, Confirmed.candidate_id == Candidate.id)
             .order_by(Candidate.year.asc(), Candidate.month.asc(), Candidate.day.asc(), Candidate.start.asc())
             .all()
         )
-
-        # confirmed_ids（candidate_id のリスト）
         confirmed_list = db.session.query(Confirmed).all()
         confirmed_ids = [c.candidate_id for c in confirmed_list]
 
-        # ---- フォーマット関数 ----
-        def format_candidate_for_list(c):
+        def format_candidate(c):
             d = date(c.year, c.month, c.day)
             youbi = ["月","火","水","木","金","土","日"][d.weekday()]
-            return {"id": c.id, "gym": c.gym, "start": c.start, "end": c.end, "md": f"{c.month}/{c.day}（{youbi}）", "month": c.month}
-
-        # フォーマット済み候補（未確定含む全候補）
-        candidates_fmt = [format_candidate_for_list(c) for c in candidates]
-
-        # 確定済みフォーマット（(Confirmed, candidate_dict) のタプルリスト）
+            return {"id": c.id, "gym": c.gym, "start": c.start, "end": c.end, "md": f"{c.month}/{c.day}（{youbi}）"}
+        candidates_fmt = [format_candidate(c) for c in candidates]
         confirmed_fmt = []
         for cnf, c in confirmed:
             d = date(c.year, c.month, c.day)
             youbi = ["月","火","水","木","金","土","日"][d.weekday()]
-            c_dict = {"gym": c.gym, "start": c.start, "end": c.end, "md": f"{c.month}/{c.day}（{youbi}）", "month": c.month}
-            confirmed_fmt.append((cnf, c_dict))
+            confirmed_fmt.append((cnf, {"gym": c.gym, "start": c.start, "end": c.end, "md": f"{c.month}/{c.day}（{youbi}）"}))
 
-        # ---- attendance_summary 作成 ----
         attendance_summary = {}
         for cnf, c in confirmed:
             event_id = cnf.id
             attendance_list = Attendance.query.filter_by(event_id=event_id).all()
-
+    
             attend_members = [a.name for a in attendance_list if (getattr(a, "status", None) or "") == "attend"]
             absent_members = [a.name for a in attendance_list if (getattr(a, "status", None) or "") == "absent"]
-
+    
             attendance_summary[event_id] = {
                 "attend_count": len(attend_members),
                 "absent_count": len(absent_members),
                 "attend_members": attend_members,
                 "absent_members": absent_members,
             }
-
-        # ---- 月ごとにグループ化（テンプレ用） ----
-        from collections import defaultdict, OrderedDict
-
-        candidates_by_month = defaultdict(list)     # month(int) -> [candidate_dict,...]
-        for c in candidates_fmt:
-            candidates_by_month[int(c["month"])].append(c)
-
-        confirmed_by_month = defaultdict(list)      # month(int) -> [(Confirmed, candidate_dict), ...]
-        for cnf, c in confirmed_fmt:
-            confirmed_by_month[int(c["month"])].append((cnf, c))
-
-        # 月キーを昇順に並べ替えた OrderedDict にしてテンプレへ（Jinja での順序安定のため）
-        def sort_dict_by_month(d):
-            return OrderedDict(sorted(d.items(), key=lambda x: x[0]))
-
-        candidates_by_month = sort_dict_by_month(candidates_by_month)
-        confirmed_by_month = sort_dict_by_month(confirmed_by_month)
-        
-        # ---- タブ（ボタン）表示用の月リスト作成 ----
-        month_tabs = []  # 例: [{"key": "2025-12", "label": "12月", "year": 2025, "month": 12}, ...]
-        
-        months_seen = set()
-        
-        # 候補と確定の両方の月をタブに表示
-        for m, clist in candidates_by_month.items():
-            for c in clist:
-                ym = (c["year"], c["month"])
-                if ym not in months_seen:
-                    months_seen.add(ym)
-                    month_tabs.append({
-                        "key": f"{c['year']}-{c['month']}",
-                        "label": f"{c['month']}月",
-                        "year": c["year"],
-                        "month": c["month"]
-                    })
-        
-        for m, conf_list in confirmed_by_month.items():
-            for cnf, cdict in conf_list:
-                ym = (cdict["year"], cdict["month"])
-                if ym not in months_seen:
-                    months_seen.add(ym)
-                    month_tabs.append({
-                        "key": f"{cdict['year']}-{cdict['month']}",
-                        "label": f"{cdict['month']}月",
-                        "year": cdict["year"],
-                        "month": cdict["month"]
-                    })
-        
-        # 日付順（年→月）に並べ替える
-        month_tabs = sorted(month_tabs, key=lambda x: (x["year"], x["month"]))
-                
+            
         return render_template(
             "confirm.html",
-            month_tabs=month_tabs,
-            candidates_by_month=candidates_by_month,
-            confirmed_by_month=confirmed_by_month,
+            candidates=candidates_fmt,
+            confirmed=confirmed_fmt,
             confirmed_ids=confirmed_ids,
             attendance_summary=attendance_summary
         )
