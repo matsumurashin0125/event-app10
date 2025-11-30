@@ -3,60 +3,92 @@
 <head>
     <title>候補日確定</title>
     <link rel="stylesheet" href="/static/style.css">
+
+    <style>
+        .tabs { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+        .tab-btn {
+            padding: 6px 14px;
+            border-radius: 6px;
+            background: #eee;
+            cursor: pointer;
+            border: none;
+            font-size: 15px;
+        }
+        .tab-btn.active { background: #2b7cff; color: white; }
+
+        .month-block { display: none; }
+        .month-block.active { display: block; }
+
+        .confirmed { background: #d9ebff; }
+        .date-large { font-size: 18px; font-weight: bold; }
+    </style>
 </head>
 <body>
 
 <h2>候補日一覧</h2>
 
-<table border="1">
-    <tr>
-        <th>日付</th>
-        <th>体育館</th>
-        <th>時間</th>
-        <th>確定</th>
-        <th>編集</th>
-        <th>削除</th>
-    </tr>
+<!-- ▼ 月タブ -->
+<div class="tabs" id="monthTabs"></div>
 
-    {% for c in candidates %}
-    <tr class="{% if c.id in confirmed_ids %}confirmed{% endif %}">
+<!-- ▼ 月ごとの候補日テーブル -->
+{% set grouped = {} %}
+{% for c in candidates %}
+    {% set m = c.month %}
+    {% if m not in grouped %}{% set _ = grouped.update({m: []}) %}{% endif %}
+    {% set _ = grouped[m].append(c) %}
+{% endfor %}
 
-        <td class="date-large">{{ c.md }}</td>
-        <td>{{ c.gym }}</td>
-        <td>{{ c.start }} 〜 {{ c.end }}</td>
+{% for month, items in grouped.items() %}
+<div class="month-block" data-month="{{ month }}">
+    <table border="1">
+        <tr>
+            <th>日付</th>
+            <th>体育館</th>
+            <th>時間</th>
+            <th>確定</th>
+            <th>編集</th>
+            <th>削除</th>
+        </tr>
 
-        <td>
-            {% if c.id in confirmed_ids %}
-                <form method="POST" action="{{ url_for('unconfirm', candidate_id=c.id) }}">
-                    <button style="background:#e67e22; color:white;">確定解除</button>
+        {% for c in items %}
+        <tr class="{% if c.id in confirmed_ids %}confirmed{% endif %}">
+            <td class="date-large">{{ c.md }}</td>
+            <td>{{ c.gym }}</td>
+            <td>{{ c.start }} 〜 {{ c.end }}</td>
+
+            <td>
+                {% if c.id in confirmed_ids %}
+                    <form method="POST" action="{{ url_for('unconfirm', candidate_id=c.id) }}">
+                        <button style="background:#e67e22; color:white;">確定解除</button>
+                    </form>
+                {% else %}
+                    <form method="POST" action="{{ url_for('confirm') }}">
+                        <input type="hidden" name="candidate_id" value="{{ c.id }}">
+                        <button>確定</button>
+                    </form>
+                {% endif %}
+            </td>
+
+            <td>
+                <form method="GET" action="{{ url_for('edit_candidate', id=c.id) }}">
+                    <button>編集</button>
                 </form>
-            {% else %}
-                <form method="POST" action="{{ url_for('confirm') }}">
-                    <input type="hidden" name="candidate_id" value="{{ c.id }}">
-                    <button>確定</button>
+            </td>
+
+            <td>
+                <form method="POST" action="{{ url_for('delete_candidate', id=c.id) }}">
+                    <button onclick="return confirm('この候補日を削除しますか？')">削除</button>
                 </form>
-            {% endif %}
-        </td>
-
-        <td>
-            <form method="GET" action="{{ url_for('edit_candidate', id=c.id) }}">
-                <button>編集</button>
-            </form>
-        </td>
-
-        <td>
-            <form method="POST" action="{{ url_for('delete_candidate', id=c.id) }}">
-                <button onclick="return confirm('この候補日を削除しますか？')">削除</button>
-            </form>
-        </td>
-    </tr>
-    {% endfor %}
-</table>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+{% endfor %}
 
 <br><hr>
 
 <h2>確定済み日程</h2>
-
 <table>
     <thead>
         <tr>
@@ -78,25 +110,11 @@
             <td>{{ c.start }} 〜 {{ c.end }}</td>
 
             {% set summary = attendance_summary.get(confirm.id, {}) %}
-            <td>{{ summary.attend_count if summary.attend_count is defined else 0 }}</td>
-            <td>{{ summary.absent_count if summary.absent_count is defined else 0 }}</td>
-            <td>
-                {% if summary.attend_members %}
-                    {{ summary.attend_members | join(", ") }}
-                {% else %}
-                    -
-                {% endif %}
-            </td>
-            <td>
-                {% if summary.absent_members %}
-                    {{ summary.absent_members | join(", ") }}
-                {% else %}
-                    -
-                {% endif %}
-            </td>
-            <td>
-                <a href="{{ url_for('manage_event_attendance', event_id=confirm.id) }}" class="btn">参加者編集</a>
-            </td>
+            <td>{{ summary.attend_count or 0 }}</td>
+            <td>{{ summary.absent_count or 0 }}</td>
+            <td>{{ summary.attend_members | join(", ") if summary.attend_members else "-" }}</td>
+            <td>{{ summary.absent_members | join(", ") if summary.absent_members else "-" }}</td>
+            <td><a href="{{ url_for('manage_event_attendance', event_id=confirm.id) }}" class="btn">参加者編集</a></td>
         </tr>
     {% endfor %}
     </tbody>
@@ -105,5 +123,30 @@
 <br>
 <a href="{{ url_for('admin_menu') }}">管理者メニューへ戻る</a>
 
+<script>
+    const groupedMonths = {{ grouped.keys() | list }};
+    const tabsContainer = document.getElementById("monthTabs");
+
+    groupedMonths.forEach(m => {
+        const btn = document.createElement("button");
+        btn.className = "tab-btn";
+        btn.textContent = `${m}月`;
+        btn.dataset.month = m;
+        tabsContainer.appendChild(btn);
+    });
+
+    const tabBtns = document.querySelectorAll(".tab-btn");
+    const blocks = document.querySelectorAll(".month-block");
+
+    function activate(month) {
+        tabBtns.forEach(b => b.classList.toggle("active", b.dataset.month == month));
+        blocks.forEach(b => b.classList.toggle("active", b.dataset.month == month));
+    }
+
+    // 初期表示：最も小さい月
+    activate(groupedMonths.sort()[0]);
+
+    tabBtns.forEach(b => b.addEventListener("click", () => activate(b.dataset.month)));
+</script>
 </body>
 </html>
