@@ -33,15 +33,11 @@
 <h1>日程管理</h1>
 
 <!-- タブボタン（月のみ表示） -->
-{% set sorted_months = candidates_by_month.keys() | list | sort %}
-<div class="tab-buttons">
-    {% for ym in sorted_months %}
-        {% set parts = ym.split('-') %}
-        {% set display_month = parts[1]|int %}  {# 月だけ表示 #}
-        <button id="btn-{{ ym }}" onclick="showTab('{{ ym }}')" class="{% if ym == active_month %}active{% endif %}">
-            {{ display_month }}月
-        </button>
-    {% endfor %}
+{% for month in sorted_months %}
+<button id="btn-{{ month }}" onclick="showTab('{{ month }}')" class="{% if month == active_month %}active{% endif %}">
+    {{ month }}月
+</button>
+{% endfor %}
 </div>
 
 <!-- タブごとの内容 -->
@@ -137,14 +133,10 @@
         window.history.replaceState(null, '', url);
     }
 
-    // 初回ロード時 URL に month 指定がある場合はそのタブを開く
     window.onload = () => {
-        const url = new URL(window.location);
-        const m = url.searchParams.get('month');
-        if (m && document.querySelector(`#btn-${m}`)) {
-            showTab(m);
-        }
+        showTab("{{ active_month }}");
     };
+
 </script>
 
 </body>
