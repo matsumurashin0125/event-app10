@@ -234,7 +234,8 @@ def create_app():
 
         candidates_by_month = sort_dict_by_month(candidates_by_month)
         confirmed_by_month = sort_dict_by_month(confirmed_by_month)
-
+        
+        sorted_months = sorted(candidates_by_month.keys())
         active_month = request.args.get("month", sorted_months[0])
         return render_template(
                     "confirm.html",
