@@ -250,7 +250,7 @@ def create_app():
             Attendance.query.filter_by(event_id=conf.id).delete()  # ★追加
             db.session.delete(conf)
             db.session.commit()
-        return redirect(url_for("confirm"))
+        return redirect(url_for("confirm") + f"?tab={request.args.get('tab','')}")
 
 
     # --------------------------------------------
