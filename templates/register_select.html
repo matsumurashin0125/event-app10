@@ -127,7 +127,16 @@
     }
 
     // 初期表示：最も月が小さいもの
-    activate(groupedMonths.sort()[0]);
+    // ★ URL パラメータから month を取得し、該当タブを初期表示
+    const params = new URLSearchParams(window.location.search);
+    const urlMonth = params.get("month");
+    
+    if (urlMonth && groupedMonths.includes(parseInt(urlMonth))) {
+        activate(urlMonth);
+    } else {
+        activate(groupedMonths.sort()[0]);
+    }
+
 
     tabBtns.forEach(b => b.addEventListener("click", () => activate(b.dataset.month)));
 </script>
