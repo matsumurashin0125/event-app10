@@ -270,7 +270,7 @@ def create_app():
                 
         return render_template(
             "confirm.html",
-            # 古いキーは残さずテンプレで新しい月別構造を使う
+            month_tabs=month_tabs,
             candidates_by_month=candidates_by_month,
             confirmed_by_month=confirmed_by_month,
             confirmed_ids=confirmed_ids,
