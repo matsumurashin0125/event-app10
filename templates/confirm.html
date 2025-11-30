@@ -34,18 +34,16 @@
 
 <!-- タブボタン（月のみ表示） -->
 <div class="tab-buttons">
-    {% for (year, month) in candidates_by_month.keys() %}
-        <button id="btn-{{ year }}-{{ month }}" onclick="showTab('{{ year }}-{{ month }}')" {% if loop.first %}class="active"{% endif %}>
+    {% for month in candidates_by_month.keys()|list|sort %}
+        <button id="btn-{{ month }}" onclick="showTab('{{ month }}')" {% if loop.first %}class="active"{% endif %}>
             {{ month }}月
         </button>
     {% endfor %}
-
 </div>
 
 <!-- タブごとの内容 -->
-{% for (year, month), items in candidates_by_month.items() %}
-<div id="tab-{{ year }}-{{ month }}" class="tab-content {% if loop.first %}active{% endif %}">
-
+{% for month in candidates_by_month.keys()|list|sort %}
+<div id="tab-{{ month }}" class="tab-content {% if loop.first %}active{% endif %}">
 
     <h2>{{ month }}月の候補日一覧</h2>
     <table border="1">
@@ -121,29 +119,6 @@
 
 <br>
 <a href="{{ url_for('admin_menu') }}">管理者メニューへ戻る</a>
-
-<script>
-    function showTab(key) {
-        document.querySelectorAll('.tab-content').forEach(e => e.classList.remove('active'));
-        document.querySelector(`#tab-${key}`).classList.add('active');
-
-        document.querySelectorAll('.tab-buttons button').forEach(e => e.classList.remove('active'));
-        document.querySelector(`#btn-${key}`).classList.add('active');
-
-        // URL に現在のタブを保存
-        const url = new URL(window.location);
-        url.searchParams.set("tab", key);
-        window.history.replaceState({}, "", url);
-    }
-
-    // 画面表示時に前回タブを復元
-    window.onload = () => {
-        const url = new URL(window.location);
-        const saved = url.searchParams.get("tab");
-        if (saved) showTab(saved);
-    };
-</script>
-
 
 </body>
 </html>
