@@ -235,13 +235,14 @@ def create_app():
         candidates_by_month = sort_dict_by_month(candidates_by_month)
         confirmed_by_month = sort_dict_by_month(confirmed_by_month)
 
+        active_month = request.args.get("month", sorted_months[0])
         return render_template(
-            "confirm.html",
-            # 古いキーは残さずテンプレで新しい月別構造を使う
+                    "confirm.html",
             candidates_by_month=candidates_by_month,
             confirmed_by_month=confirmed_by_month,
+            attendance_summary=attendance_summary,
             confirmed_ids=confirmed_ids,
-            attendance_summary=attendance_summary
+            active_month=active_month,
         )
         
     @app.route("/confirm/<int:candidate_id>/unconfirm", methods=["POST"])
