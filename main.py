@@ -234,7 +234,40 @@ def create_app():
 
         candidates_by_month = sort_dict_by_month(candidates_by_month)
         confirmed_by_month = sort_dict_by_month(confirmed_by_month)
-
+        
+        # ---- タブ（ボタン）表示用の月リスト作成 ----
+        month_tabs = []  # 例: [{"key": "2025-12", "label": "12月", "year": 2025, "month": 12}, ...]
+        
+        months_seen = set()
+        
+        # 候補と確定の両方の月をタブに表示
+        for m, clist in candidates_by_month.items():
+            for c in clist:
+                ym = (c["year"], c["month"])
+                if ym not in months_seen:
+                    months_seen.add(ym)
+                    month_tabs.append({
+                        "key": f"{c['year']}-{c['month']}",
+                        "label": f"{c['month']}月",
+                        "year": c["year"],
+                        "month": c["month"]
+                    })
+        
+        for m, conf_list in confirmed_by_month.items():
+            for cnf, cdict in conf_list:
+                ym = (cdict["year"], cdict["month"])
+                if ym not in months_seen:
+                    months_seen.add(ym)
+                    month_tabs.append({
+                        "key": f"{cdict['year']}-{cdict['month']}",
+                        "label": f"{cdict['month']}月",
+                        "year": cdict["year"],
+                        "month": cdict["month"]
+                    })
+        
+        # 日付順（年→月）に並べ替える
+        month_tabs = sorted(month_tabs, key=lambda x: (x["year"], x["month"]))
+                
         return render_template(
             "confirm.html",
             # 古いキーは残さずテンプレで新しい月別構造を使う
