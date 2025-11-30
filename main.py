@@ -710,8 +710,19 @@ def create_app():
     @app.route("/line_webhook", methods=["POST"])
     def line_webhook():
         body = request.get_data(as_text=True)
-        print("LINE Webhook received:", body)
-        return "OK", 200
+        data = json.loads(body)
+    
+        # チャット種別ごとにIDを取得
+        if "source" in data["events"][0]:
+            src = data["events"][0]["source"]
+            if src["type"] == "user":
+                print("User ID:", src["userId"])
+            elif src["type"] == "group":
+                print("Group ID:", src["groupId"])
+            elif src["type"] == "room":
+                print("Room ID:", src["roomId"])
+    
+        return "OK"
 
     # DB create
     with app.app_context():
