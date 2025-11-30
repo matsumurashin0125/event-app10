@@ -19,12 +19,12 @@
     </style>
 
     <script>
-        function showTab(key) {
+        function showTab(month) {
             document.querySelectorAll('.tab-content').forEach(e => e.classList.remove('active'));
-            document.querySelector(`#tab-${key}`).classList.add('active');
+            document.querySelector(`#tab-${month}`).classList.add('active');
 
             document.querySelectorAll('.tab-buttons button').forEach(e => e.classList.remove('active'));
-            document.querySelector(`#btn-${key}`).classList.add('active');
+            document.querySelector(`#btn-${month}`).classList.add('active');
         }
     </script>
 </head>
@@ -32,27 +32,27 @@
 
 <h1>日程管理</h1>
 
-<!-- 🔹 タブボタン（月のみ表示 / 並び順は12月2025→1月2026…） -->
+<!-- タブボタン（月のみ表示） -->
 <div class="tab-buttons">
-    {% for tab in month_tabs %}
-        <button id="btn-{{ tab.key }}" onclick="showTab('{{ tab.key }}')" {% if loop.first %}class="active"{% endif %}>
-            {{ tab.label }}
+    {% for month in candidates_by_month.keys()|list|sort %}
+        <button id="btn-{{ month }}" onclick="showTab('{{ month }}')" {% if loop.first %}class="active"{% endif %}>
+            {{ month }}月
         </button>
     {% endfor %}
 </div>
 
-<!-- 🔹 月ごとの内容 -->
-{% for tab in month_tabs %}
-<div id="tab-{{ tab.key }}" class="tab-content {% if loop.first %}active{% endif %}">
+<!-- タブごとの内容 -->
+{% for month in candidates_by_month.keys()|list|sort %}
+<div id="tab-{{ month }}" class="tab-content {% if loop.first %}active{% endif %}">
 
-    <h2>{{ tab.label }}の候補日一覧</h2>
+    <h2>{{ month }}月の候補日一覧</h2>
     <table border="1">
         <tr>
             <th>日付</th><th>体育館</th><th>時間</th>
             <th>確定</th><th>編集</th><th>削除</th>
         </tr>
 
-        {% for c in candidates_by_month.get(tab.month, []) %}
+        {% for c in candidates_by_month[month] %}
         <tr class="{% if c.id in confirmed_ids %}confirmed{% endif %}">
             <td class="date-large">{{ c.md }}</td>
             <td>{{ c.gym }}</td>
@@ -88,7 +88,7 @@
 
     <br><hr>
 
-    <h2>{{ tab.label }}の確定済み日程</h2>
+    <h2>{{ month }}月の確定済み日程</h2>
     <table border="1">
         <tr>
             <th>日付</th><th>体育館</th><th>時間</th>
@@ -97,7 +97,7 @@
             <th>編集</th>
         </tr>
 
-        {% for confirm, c in confirmed_by_month.get(tab.month, []) %}
+        {% for confirm, c in confirmed_by_month.get(month, []) %}
             {% set summary = attendance_summary.get(confirm.id, {}) %}
             <tr>
                 <td class="date-large">{{ c.md }}</td>
