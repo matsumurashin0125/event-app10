@@ -217,23 +217,22 @@ def create_app():
                 "absent_members": absent_members,
             }
 
-        # ---- 月ごとにグループ化（テンプレ用） ----
-        from collections import defaultdict, OrderedDict
-
-        candidates_by_month = defaultdict(list)     # month(int) -> [candidate_dict,...]
+        # 月ごとにグループ化
+        candidates_by_month = defaultdict(list)
         for c in candidates_fmt:
-            candidates_by_month[int(c["month"])].append(c)
-
-        confirmed_by_month = defaultdict(list)      # month(int) -> [(Confirmed, candidate_dict), ...]
+            key = (c["year"], c["month"])
+            candidates_by_month[key].append(c)
+        
+        confirmed_by_month = defaultdict(list)
         for cnf, c in confirmed_fmt:
-            confirmed_by_month[int(c["month"])].append((cnf, c))
+            key = (c["year"], c["month"])
+            confirmed_by_month[key].append((cnf, c))
+        
+        # (year, month) で昇順ソート
+        from collections import OrderedDict
+        candidates_by_month = OrderedDict(sorted(candidates_by_month.items(), key=lambda x: x[0]))
+        confirmed_by_month = OrderedDict(sorted(confirmed_by_month.items(), key=lambda x: x[0]))
 
-        # 月キーを昇順に並べ替えた OrderedDict にしてテンプレへ（Jinja での順序安定のため）
-        def sort_dict_by_month(d):
-            return OrderedDict(sorted(d.items(), key=lambda x: x[0]))
-
-        candidates_by_month = sort_dict_by_month(candidates_by_month)
-        confirmed_by_month = sort_dict_by_month(confirmed_by_month)
 
         return render_template(
             "confirm.html",
