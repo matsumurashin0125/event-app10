@@ -687,7 +687,7 @@ def create_app():
     }
     
     def send_reminder_for_tomorrow():
-        tomorrow = datetime.now(LOCAL_TZ).date() 
+        tomorrow = datetime.now(LOCAL_TZ).date() + timedelta(days=1)
         events = (
             db.session.query(Confirmed, Candidate)
             .join(Candidate, Confirmed.candidate_id == Candidate.id)
@@ -724,7 +724,7 @@ def create_app():
             )
             
     def send_reminder_for_one_week_before():
-        target_date = datetime.now(LOCAL_TZ).date() 
+        target_date = datetime.now(LOCAL_TZ).date() + timedelta(days=7)
     
         events = (
             db.session.query(Confirmed, Candidate)
