@@ -398,12 +398,12 @@ def create_app():
             attend_count = len([a for a in event_att if a.status == "attend"])
             absent_count = len([a for a in event_att if a.status == "absent"])
             
-            send_line_message(
-                f"📝 参加登録\n"
-                f"{request.form['name']} : {status}\n"
-                f"現在の状況 → 参加 {attend_count} / 不参加 {absent_count}\n"
-                f"{candidate.month}/{candidate.day} @ {candidate.gym} {candidate.start}〜{candidate.end}"
-            )
+            #send_line_message(
+                #f"📝 参加登録\n"
+                #f"{request.form['name']} : {status}\n"
+                #f"現在の状況 → 参加 {attend_count} / 不参加 {absent_count}\n"
+                #f"{candidate.month}/{candidate.day} @ {candidate.gym} {candidate.start}〜{candidate.end}"
+            #)
 
 
              # ---- メール送信（参加の場合）----
