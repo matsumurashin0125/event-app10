@@ -676,21 +676,50 @@ def create_app():
             line_bot_api.push_message(to_id, TextSendMessage(text=text))
         except Exception as e:
             print("LINE Error:", e)
-
+                
+    # 体育館ごとの集合時間（開始時間からのマイナス分）
+    MEETING_OFFSET_MINUTES = {
+        "中平井": 20,
+        "平井": 30,
+        "西小岩": 40,
+        "北小岩": 45,
+        "南小岩": 45,
+    }
+    
     def send_reminder_for_tomorrow():
         tomorrow = datetime.now(LOCAL_TZ).date() + timedelta(days=1)
+    
         events = (
             db.session.query(Confirmed, Candidate)
             .join(Candidate, Confirmed.candidate_id == Candidate.id)
-            .filter(Candidate.year == tomorrow.year, Candidate.month == tomorrow.month, Candidate.day == tomorrow.day)
+            .filter(
+                Candidate.year == tomorrow.year,
+                Candidate.month == tomorrow.month,
+                Candidate.day == tomorrow.day
+            )
             .all()
         )
+    
         for cnf, c in events:
             att = Attendance.query.filter_by(event_id=cnf.id).all()
             attend_members = [a.name for a in att if a.status == "attend"]
+    
+            # ---- 集合時間計算 ----
+            start_h, start_m = map(int, c.start.split(":"))
+            start_dt = datetime(
+                c.year, c.month, c.day,
+                start_h, start_m,
+                tzinfo=LOCAL_TZ
+            )
+    
+            offset = MEETING_OFFSET_MINUTES.get(c.gym, 30)  # デフォルト30分
+            meeting_dt = start_dt - timedelta(minutes=offset)
+            meeting_time_str = meeting_dt.strftime("%H:%M")
+    
             send_line_message(
                 f"⏰ 明日はイベントです！\n"
-                f"{c.month}/{c.day} @ {c.gym} {c.start}〜{c.end}\n"
+                f"{c.month}/{c.day} @ {c.gym} {c.start}〜{c.end}\n\n"
+                f"📣 {meeting_time_str}にメール室前集合です！\n\n"
                 f"参加予定: {len(attend_members)}名\n"
                 f"{', '.join(attend_members) if attend_members else 'まだ未登録'}"
             )
