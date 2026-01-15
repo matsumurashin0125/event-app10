@@ -696,18 +696,18 @@ def create_app():
             )
             
     def send_reminder_for_one_week_before():
-    target_date = datetime.now(LOCAL_TZ).date() + timedelta(days=7)
-
-    events = (
-        db.session.query(Confirmed, Candidate)
-        .join(Candidate, Confirmed.candidate_id == Candidate.id)
-        .filter(
-            Candidate.year == target_date.year,
-            Candidate.month == target_date.month,
-            Candidate.day == target_date.day
+        target_date = datetime.now(LOCAL_TZ).date() + timedelta(days=7)
+    
+        events = (
+            db.session.query(Confirmed, Candidate)
+            .join(Candidate, Confirmed.candidate_id == Candidate.id)
+            .filter(
+                Candidate.year == target_date.year,
+                Candidate.month == target_date.month,
+                Candidate.day == target_date.day
+            )
+            .all()
         )
-        .all()
-    )
 
     for cnf, c in events:
         attendance = Attendance.query.filter_by(event_id=cnf.id).all()
