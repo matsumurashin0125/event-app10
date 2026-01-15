@@ -695,6 +695,37 @@ def create_app():
                 f"{', '.join(attend_members) if attend_members else 'まだ未登録'}"
             )
             
+    def send_reminder_for_one_week_before():
+    target_date = datetime.now(LOCAL_TZ).date() + timedelta(days=7)
+
+    events = (
+        db.session.query(Confirmed, Candidate)
+        .join(Candidate, Confirmed.candidate_id == Candidate.id)
+        .filter(
+            Candidate.year == target_date.year,
+            Candidate.month == target_date.month,
+            Candidate.day == target_date.day
+        )
+        .all()
+    )
+
+    for cnf, c in events:
+        attendance = Attendance.query.filter_by(event_id=cnf.id).all()
+
+        attend = [a.name for a in attendance if a.status == "attend"]
+        absent = [a.name for a in attendance if a.status == "absent"]
+        pending = [a.name for a in attendance if a.status == "pending"]
+
+        send_line_message(
+            f"📣 参加登録リマインド（1週間前）\n"
+            f"{c.month}/{c.day} @ {c.gym} {c.start}〜{c.end}\n\n"
+            f"✅ 参加: {len(attend)}名\n"
+            f"❌ 不参加: {len(absent)}名\n"
+            f"❓ 未回答: {len(pending)}名\n\n"
+            f"まだの方は参加登録をお願いします👇\n"
+            f"{url_for('set_name', _external=True)}"
+        )
+            
     @app.route("/cron_reminder", methods=["POST"])
     def cron_reminder():
         try:
