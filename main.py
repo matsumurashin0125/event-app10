@@ -729,13 +729,12 @@ def create_app():
     @app.route("/cron_reminder", methods=["POST"])
     def cron_reminder():
         try:
-            send_reminder_for_tomorrow()  # ← 前日リマインダー処理の関数
-            print("CRON executed successfully")
+            send_reminder_for_one_week_before()   # ★ 追加
+            send_reminder_for_tomorrow()          # 既存
             return {"status": "ok"}, 200
-    
         except Exception as e:
-            print("CRON failed:", e)
             return {"status": "error", "message": str(e)}, 500
+        
     from flask import request
 
     @app.route("/line_webhook", methods=["POST"])
